@@ -1,0 +1,7 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter Variable", sans-serif;
+  --font-sans--font-feature-settings: "calt", "zero", "ss01", "cv10", "cv08",
+    "cv05";
+}
