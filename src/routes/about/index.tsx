@@ -1,6 +1,7 @@
 import { component$, useStyles$ } from "@builder.io/qwik";
 import Navbar from "~/components/Navbar";
 import styles from "../index.css?inline";
+import type { DocumentHead } from "@builder.io/qwik-city";
 
 export default component$(() => {
   useStyles$(styles);
@@ -42,3 +43,13 @@ export default component$(() => {
     </div>
   );
 });
+
+export const head: DocumentHead = {
+  title: "SupportAddress | About",
+  meta: [
+    {
+      name: "description",
+      content: "About this project",
+    },
+  ],
+};

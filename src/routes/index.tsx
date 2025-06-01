@@ -262,11 +262,12 @@ export default component$(() => {
 });
 
 export const head: DocumentHead = {
-  title: "Support",
+  title: "SupportAddress | Email-First Support",
   meta: [
     {
       name: "description",
-      content: "Qwik site description",
+      content:
+        "SupportAddress provides an AI-enhanced email-first Support ticketing service so your users can focus on writing support tickets rather than juggling through complicated software.",
     },
   ],
 };
