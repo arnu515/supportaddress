@@ -1,0 +1,9 @@
+body {
+  @apply bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 selection:bg-purple-500/50 selection:text-white;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+@reference '../global.css';
