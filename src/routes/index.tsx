@@ -1,40 +1,7 @@
 import { component$, useStyles$ } from "@builder.io/qwik";
 import { type DocumentHead, Link } from "@builder.io/qwik-city";
 import styles from "./index.css?inline";
-
-const Navbar = () => (
-  <nav class="relative px-4 py-6">
-    <div class="container mx-auto flex items-center justify-between">
-      <div class="flex items-center space-x-2">
-        <img src="/favicon.svg" alt="Logo" class="h-8 w-8" />
-        <span class="text-xl font-bold text-white">SupportAddress</span>
-      </div>
-      <div class="hidden items-center space-x-8 md:flex">
-        <a
-          href="#features"
-          class="text-gray-300 transition-colors hover:text-white"
-        >
-          Features
-        </a>
-        <Link
-          href="/pricing"
-          class="text-gray-300 transition-colors hover:text-white"
-        >
-          Pricing
-        </Link>
-        <Link
-          href="/contact"
-          class="text-gray-300 transition-colors hover:text-white"
-        >
-          Contact
-        </Link>
-        <button class="cursor-pointer rounded-lg border border-purple-400 bg-white px-4 py-2 text-purple-500 transition-colors duration-300 hover:bg-purple-400 hover:text-white">
-          Sign In
-        </button>
-      </div>
-    </div>
-  </nav>
-);
+import Navbar from "~/components/Navbar";
 
 const Hero = () => (
   <section class="relative px-4 py-20 md:py-32">
@@ -281,6 +248,15 @@ export default component$(() => {
       <Hero />
       <Features />
       <GetStarted />
+
+      <footer class="mt-20 mb-4 text-center">
+        <p class="text-lg text-gray-300">
+          &copy; Copyright 2025 Aarnav Pai.{" "}
+          <Link href="/about" class="text-purple-500">
+            About this project
+          </Link>
+        </p>
+      </footer>
     </>
   );
 });
