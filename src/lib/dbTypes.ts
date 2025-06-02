@@ -9,6 +9,123 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      organisations: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          link: string | null
+          name: string
+          owner_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id: string
+          link?: string | null
+          name: string
+          owner_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          link?: string | null
+          name?: string
+          owner_id?: string
+        }
+        Relationships: []
+      }
+      organisations_users: {
+        Row: {
+          id: number
+          org_id: string
+          user_id: string
+        }
+        Insert: {
+          id?: number
+          org_id: string
+          user_id: string
+        }
+        Update: {
+          id?: number
+          org_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organisations_users_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organisations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      subgroups: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          link: string | null
+          name: string
+          org_id: string
+          owner_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id: string
+          link?: string | null
+          name: string
+          org_id: string
+          owner_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          link?: string | null
+          name?: string
+          org_id?: string
+          owner_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subgroups_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organisations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      subgroups_users: {
+        Row: {
+          id: number
+          subgroup_id: string
+          user_id: string
+        }
+        Insert: {
+          id?: number
+          subgroup_id: string
+          user_id: string
+        }
+        Update: {
+          id?: number
+          subgroup_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subgroups_users_subgroup_id_fkey"
+            columns: ["subgroup_id"]
+            isOneToOne: false
+            referencedRelation: "subgroups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       users: {
         Row: {
           avatar_url: string | null
