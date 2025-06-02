@@ -33,10 +33,10 @@ export default component$(() => {
             Contact
           </Link>
           <Link
-            href={user ? "/app" : "/auth"}
+            href={user.value ? "/app" : "/auth"}
             class="cursor-pointer rounded-lg border border-purple-400 bg-white px-4 py-2 text-purple-500 transition-colors duration-300 hover:bg-purple-400 hover:text-white"
           >
-            {user ? "Dashboard" : "Sign In"}
+            {user.value ? "Dashboard" : "Sign In"}
           </Link>
         </div>
       </div>
