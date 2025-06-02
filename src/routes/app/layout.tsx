@@ -6,14 +6,86 @@ import {
 } from "@builder.io/qwik";
 import { useRequiredUser } from "~/lib/user";
 import styles from "./layout.css?inline";
-import { Link } from "@builder.io/qwik-city";
+import { Link, routeLoader$, useLocation } from "@builder.io/qwik-city";
+import { createSupabaseServerClient } from "~/lib/supabase";
+import type { Database } from "~/lib/dbTypes";
 
 export { useRequiredUser } from "~/lib/user";
+
+export const useOrgs = routeLoader$(async (req) => {
+  const orgs: typeof data = req.sharedMap.get("orgs");
+  if (orgs) return orgs;
+  const supabase = createSupabaseServerClient(req);
+  const { data, error } = await supabase.from("organisations").select("*");
+  if (error) throw req.error(500, error.message);
+  req.sharedMap.set("org", data);
+  return data;
+});
+
+export const useCurrentOrg = routeLoader$(async (req) => {
+  const user = req.sharedMap.get("user");
+  if (!user) throw req.redirect(303, "/auth");
+  const supabase = createSupabaseServerClient(req);
+  if (req.pathname === "/app/" || req.pathname === "/app") {
+    const { lastOrgId } = user.user_metadata;
+    if (lastOrgId) {
+      const { count, error } = await supabase
+        .from("organisations")
+        .select("1")
+        .eq("id", lastOrgId);
+      if (error) throw req.error(500, error.message);
+      if (count) throw req.redirect(303, "/app/" + lastOrgId);
+    }
+    const { data, error } = await supabase
+      .from("organisations")
+      .select("id")
+      .limit(1)
+      .maybeSingle();
+    if (error) throw req.error(500, error.message);
+    throw req.redirect(303, data ? `/app/${data.id}` : "/app/new-org");
+  }
+
+  const { orgId } = req.params;
+  if (!orgId) return null;
+  const org = req.sharedMap.get(
+    "org",
+  ) as Database["public"]["Tables"]["organisations"]["Row"];
+  if (org && org.id === orgId) return org;
+  const { data, error } = await supabase
+    .from("organisations")
+    .select("*")
+    .eq("id", orgId)
+    .maybeSingle();
+  if (error) throw req.error(500, error.message);
+  if (!data) throw req.error(404, "This organisation does not exist");
+  req.sharedMap.set("org", org);
+  return data;
+});
+
+export const useSubgroups = routeLoader$(async (req) => {
+  const supabase = createSupabaseServerClient(req);
+  const { orgId } = req.params;
+  if (!orgId) return [];
+  const sg = req.sharedMap.get("subgroups-" + orgId);
+  if (sg) return sg as Database["public"]["Tables"]["subgroups"]["Row"][];
+  const { data, error } = await supabase
+    .from("subgroups")
+    .select("*")
+    .eq("org_id", orgId);
+  if (error) throw req.error(500, error.message);
+  req.sharedMap.set("subgroups-" + orgId, data);
+  return data;
+});
 
 export default component$(() => {
   useRequiredUser();
   useStylesScoped$(styles);
 
+  const orgs = useOrgs();
+  const org = useCurrentOrg();
+  const subgroups = useSubgroups();
+
+  const loc = useLocation();
   const sidebarOpen = useSignal(true);
   const orgDropdownOpen = useSignal(false);
 
@@ -59,7 +131,7 @@ export default component$(() => {
         </button>
 
         <p class="mx-auto max-w-[50%] truncate text-center text-sm font-medium">
-          Organisation Name
+          {org.value?.name}
         </p>
       </nav>
 
@@ -93,7 +165,7 @@ export default component$(() => {
                 <path d="M10 18h4" />
               </svg>
               <span class="truncate text-sm font-medium">
-                Organisation Name
+                {org.value?.name || "No organisations"}
               </span>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -115,42 +187,54 @@ export default component$(() => {
               class="org-dropdown"
               style={{ display: orgDropdownOpen.value ? "block" : "none" }}
             >
-              <li>
-                <Link href="/app/org-1" class="active">
-                  Org 1
-                </Link>
-              </li>
-              <li>
-                <Link href="/app/org-1">Org 1</Link>
-              </li>
-              <li>
-                <Link href="/app/org-1">Org 1</Link>
-              </li>
-              <li>
-                <Link href="/app/org-1">Org 1</Link>
-              </li>
+              {orgs.value.map((org) => (
+                <li>
+                  <Link
+                    href={`/app/${org.id}`}
+                    class={
+                      loc.url.pathname.startsWith(`/app/${org.id}`)
+                        ? "active"
+                        : undefined
+                    }
+                  >
+                    {org.name}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
-          <h3 class="black:text-gray-600 mx-4 text-sm font-bold text-gray-400 uppercase">
-            Subgroups
-          </h3>
-          <ul class="subgroup-list overflow-auto">
-            <li>
-              <Link href="/app/org-1/subgroup-1" class="active">
-                Subgroup 1
-              </Link>
-            </li>
-            <li>
-              <Link href="/app/org-1/subgroup-2">Subgroup 2</Link>
-            </li>
-          </ul>
+          {subgroups.value && (
+            <>
+              <h3 class="black:text-gray-600 mx-4 text-sm font-bold text-gray-400 uppercase">
+                Subgroups
+              </h3>
+              <ul class="subgroup-list overflow-auto">
+                {subgroups.value.map((sg) => (
+                  <li>
+                    <Link
+                      href={`/app/${sg.org_id}/${sg.id}`}
+                      class={
+                        loc.url.pathname.startsWith(
+                          `/app/${sg.org_id}/${sg.id}`,
+                        )
+                          ? "active"
+                          : undefined
+                      }
+                    >
+                      {sg.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
 
           <ul class="subgroup-list mt-auto mb-4">
             <li>
               <Link
-                href="/app/org-1/subgroup-1"
-                class="active !flex items-center gap-2"
+                href="/app/messages"
+                class={`${loc.url.pathname.startsWith("/app/messages") ? "active" : ""}!flex items-center gap-2`}
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -174,8 +258,8 @@ export default component$(() => {
             </li>
             <li>
               <Link
-                href="/app/org-1/subgroup-2"
-                class="!flex items-center gap-2"
+                href="/app/settings"
+                class={`${loc.url.pathname.startsWith("/app/settings") ? "active" : ""}!flex items-center gap-2`}
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
