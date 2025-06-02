@@ -1,9 +1,4 @@
-import {
-  component$,
-  useComputed$,
-  useSignal,
-  useStyles$,
-} from "@builder.io/qwik";
+import { component$, useSignal, useStyles$ } from "@builder.io/qwik";
 import {
   createServiceRoleClient,
   createSupabaseServerClient,
@@ -21,7 +16,7 @@ type Step =
   //        pw-token vvvvvv
   | ["set-password", string];
 
-const checkEmail = routeAction$(
+export const useCheckEmail = routeAction$(
   async ({ email }, req) => {
     const supabase = createSupabaseServerClient(req);
 
@@ -51,7 +46,7 @@ const checkEmail = routeAction$(
   }),
 );
 
-const checkOtp = routeAction$(
+export const useCheckOtp = routeAction$(
   async ({ email, otp, name, password }, req) => {
     const supabaseAnon = createSupabaseServerClient(req);
 
@@ -102,7 +97,7 @@ const checkOtp = routeAction$(
   }),
 );
 
-const checkPassword = routeAction$(
+export const useCheckPassword = routeAction$(
   async ({ email, password }, req) => {
     const supabaseAnon = createSupabaseServerClient(req);
 
@@ -132,36 +127,12 @@ export default component$(() => {
   useStyles$(styles);
 
   const step = useSignal<Step>(["email"]);
-  const checkEmailAction = checkEmail();
-  const checkOtpAction = checkOtp();
-  const checkPasswordAction = checkPassword();
+  const checkEmail = useCheckEmail();
+  const checkOtp = useCheckOtp();
+  const checkPassword = useCheckPassword();
 
   const user = useUser();
-
-  const error = useComputed$(() => {
-    if (
-      checkEmailAction.value?.failed &&
-      typeof checkEmailAction.value?.message === "string"
-    )
-      return checkEmailAction.value.message;
-    if (
-      checkOtpAction.value?.failed &&
-      typeof checkOtpAction.value?.message === "string"
-    )
-      return checkOtpAction.value.message;
-    if (
-      checkPasswordAction.value?.failed &&
-      typeof checkPasswordAction.value?.message === "string"
-    )
-      return checkPasswordAction.value.message;
-  });
-
-  const loading = useComputed$(
-    () =>
-      checkEmailAction.isRunning ||
-      checkOtpAction.isRunning ||
-      checkPasswordAction.isRunning,
-  );
+  const error = useSignal("");
 
   return (
     <div class="min-h-screen py-10">
@@ -279,11 +250,16 @@ export default component$(() => {
             {step.value[0] === "email" && (
               <Form
                 class="space-y-4"
-                action={checkEmailAction}
-                onSubmitCompleted$={() => {
-                  console.log(checkEmailAction.value);
-                  if (Array.isArray(checkEmailAction.value))
-                    step.value = checkEmailAction.value;
+                action={checkEmail}
+                onSubmitCompleted$={(e) => {
+                  if (Array.isArray(e.detail.value))
+                    step.value = e.detail.value;
+
+                  if (
+                    e.detail.value?.failed &&
+                    typeof e.detail.value?.message === "string"
+                  )
+                    error.value = e.detail.value?.message;
                 }}
               >
                 <div class="space-y-2">
@@ -307,41 +283,47 @@ export default component$(() => {
                       id="email"
                       type="email"
                       name="email"
-                      value={checkEmailAction.formData?.get("email")}
+                      value={checkEmail.formData?.get("email")}
                       aria-label="Email"
                       placeholder="Enter your email"
                       class="w-full rounded-md border border-purple-400/30 bg-white/5 py-2 pr-4 pl-10 text-white placeholder:text-gray-400 focus:border-purple-400"
                       required
                     />
                   </div>
-                  {checkEmailAction.value?.fieldErrors?.email && (
+                  {checkEmail.value?.fieldErrors?.email && (
                     <p class="mt-2 text-sm text-red-500">
-                      {checkEmailAction.value.fieldErrors.email}
+                      {checkEmail.value.fieldErrors.email}
                     </p>
                   )}
                 </div>
 
                 <button
                   type="submit"
-                  disabled={loading.value}
+                  disabled={
+                    checkEmail.isRunning ||
+                    checkOtp.isRunning ||
+                    checkPassword.isRunning
+                  }
                   class="flex w-full cursor-pointer items-center justify-center gap-2 rounded-md bg-gradient-to-r from-purple-500 to-blue-500 px-4 py-2 text-white hover:from-purple-600 hover:to-blue-600 disabled:cursor-not-allowed"
                 >
-                  {loading.value && (
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="24"
-                      height="24"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      class="size-5 animate-spin"
-                    >
-                      <path d="M21 12a9 9 0 1 1-6.219-8.56" />
-                    </svg>
-                  )}{" "}
+                  {checkEmail.isRunning ||
+                    checkOtp.isRunning ||
+                    (checkPassword.isRunning && (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        class="size-5 animate-spin"
+                      >
+                        <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+                      </svg>
+                    ))}{" "}
                   Continue
                 </button>
               </Form>
@@ -350,9 +332,13 @@ export default component$(() => {
             {step.value[0] === "otp" && (
               <Form
                 class="space-y-4"
-                action={checkOtpAction}
+                action={checkOtp}
                 onSubmitCompleted$={(e) => {
-                  console.log(e);
+                  if (
+                    e.detail.value?.failed &&
+                    typeof e.detail.value?.message === "string"
+                  )
+                    error.value = e.detail.value?.message;
                 }}
               >
                 <div class="rounded-lg border border-purple-400/20 bg-purple-500/10 p-4 text-center">
@@ -394,21 +380,21 @@ export default component$(() => {
                       aria-label="Verification Code"
                       name="otp"
                       placeholder="Enter 6-digit code"
-                      value={checkOtpAction.formData?.get("otp")}
+                      value={checkOtp.formData?.get("otp")}
                       class="w-full rounded-md border border-purple-400/30 bg-white/5 py-2 pr-4 pl-10 text-white placeholder:text-gray-400 focus:border-purple-400"
                       maxLength={6}
                       required
                     />
                   </div>
                   <input type="hidden" name="email" value={step.value[1]} />
-                  {checkOtpAction.value?.fieldErrors?.otp && (
+                  {checkOtp.value?.fieldErrors?.otp && (
                     <p class="mt-2 text-sm text-red-500">
-                      {checkOtpAction.value.fieldErrors.otp}
+                      {checkOtp.value.fieldErrors.otp}
                     </p>
                   )}
-                  {checkOtpAction.value?.fieldErrors?.email && (
+                  {checkOtp.value?.fieldErrors?.email && (
                     <p class="mt-2 text-sm text-red-500">
-                      {checkOtpAction.value.fieldErrors.email}
+                      {checkOtp.value.fieldErrors.email}
                     </p>
                   )}
                 </div>
@@ -448,14 +434,14 @@ export default component$(() => {
                       type="text"
                       name="name"
                       placeholder="Enter your name"
-                      value={checkOtpAction.formData?.get("name")}
+                      value={checkOtp.formData?.get("name")}
                       class="w-full rounded-md border border-purple-400/30 bg-white/5 py-2 pr-4 pl-10 text-white placeholder:text-gray-400 focus:border-purple-400"
                       required
                     />
                   </div>
-                  {checkOtpAction.value?.fieldErrors?.name && (
+                  {checkOtp.value?.fieldErrors?.name && (
                     <p class="mt-2 text-sm text-red-500">
-                      {checkOtpAction.value.fieldErrors.name}
+                      {checkOtp.value.fieldErrors.name}
                     </p>
                   )}
                 </div>
@@ -495,39 +481,45 @@ export default component$(() => {
                       type="password"
                       name="password"
                       placeholder="Enter a password"
-                      value={checkOtpAction.formData?.get("password")}
+                      value={checkOtp.formData?.get("password")}
                       class="w-full rounded-md border border-purple-400/30 bg-white/5 py-2 pr-4 pl-10 text-white placeholder:text-gray-400 focus:border-purple-400"
                       required
                     />
                   </div>
-                  {checkOtpAction.value?.fieldErrors?.password && (
+                  {checkOtp.value?.fieldErrors?.password && (
                     <p class="mt-2 text-sm text-red-500">
-                      {checkOtpAction.value.fieldErrors.password}
+                      {checkOtp.value.fieldErrors.password}
                     </p>
                   )}
                 </div>
 
                 <button
                   type="submit"
-                  disabled={loading.value}
+                  disabled={
+                    checkEmail.isRunning ||
+                    checkOtp.isRunning ||
+                    checkPassword.isRunning
+                  }
                   class="flex w-full cursor-pointer items-center justify-center gap-2 rounded-md bg-gradient-to-r from-purple-500 to-blue-500 px-4 py-2 text-white hover:from-purple-600 hover:to-blue-600 disabled:cursor-not-allowed"
                 >
-                  {loading.value && (
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="24"
-                      height="24"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      class="size-5 animate-spin"
-                    >
-                      <path d="M21 12a9 9 0 1 1-6.219-8.56" />
-                    </svg>
-                  )}{" "}
+                  {checkEmail.isRunning ||
+                    checkOtp.isRunning ||
+                    (checkPassword.isRunning && (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        class="size-5 animate-spin"
+                      >
+                        <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+                      </svg>
+                    ))}{" "}
                   Sign Up
                 </button>
               </Form>
@@ -536,9 +528,13 @@ export default component$(() => {
             {step.value[0] === "password" && (
               <Form
                 class="space-y-4"
-                action={checkPasswordAction}
+                action={checkPassword}
                 onSubmitCompleted$={(e) => {
-                  console.log(e);
+                  if (
+                    e.detail.value?.failed &&
+                    typeof e.detail.value?.message === "string"
+                  )
+                    error.value = e.detail.value?.message;
                 }}
               >
                 <div class="space-y-2">
@@ -569,46 +565,52 @@ export default component$(() => {
                       id="password"
                       type="password"
                       name="password"
-                      value={checkPasswordAction.formData?.get("password")}
+                      value={checkPassword.formData?.get("password")}
                       placeholder="Enter your password"
                       class="w-full rounded-md border border-purple-400/30 bg-white/5 py-2 pr-4 pl-10 text-white placeholder:text-gray-400 focus:border-purple-400"
                       required
                     />
                   </div>
                   <input type="hidden" name="email" value={step.value[1]} />
-                  {checkPasswordAction.value?.fieldErrors?.password && (
+                  {checkPassword.value?.fieldErrors?.password && (
                     <p class="mt-2 text-sm text-red-500">
-                      {checkPasswordAction.value.fieldErrors.password}
+                      {checkPassword.value.fieldErrors.password}
                     </p>
                   )}
-                  {checkPasswordAction.value?.fieldErrors?.email && (
+                  {checkPassword.value?.fieldErrors?.email && (
                     <p class="mt-2 text-sm text-red-500">
-                      {checkPasswordAction.value.fieldErrors.email}
+                      {checkPassword.value.fieldErrors.email}
                     </p>
                   )}
                 </div>
 
                 <button
                   type="submit"
-                  disabled={loading.value}
+                  disabled={
+                    checkEmail.isRunning ||
+                    checkOtp.isRunning ||
+                    checkPassword.isRunning
+                  }
                   class="flex w-full cursor-pointer items-center justify-center gap-2 rounded-md bg-gradient-to-r from-purple-500 to-blue-500 px-4 py-2 text-white hover:from-purple-600 hover:to-blue-600 disabled:cursor-not-allowed"
                 >
-                  {loading.value && (
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="24"
-                      height="24"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      class="size-5 animate-spin"
-                    >
-                      <path d="M21 12a9 9 0 1 1-6.219-8.56" />
-                    </svg>
-                  )}{" "}
+                  {checkEmail.isRunning ||
+                    checkOtp.isRunning ||
+                    (checkPassword.isRunning && (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        class="size-5 animate-spin"
+                      >
+                        <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+                      </svg>
+                    ))}{" "}
                   Continue
                 </button>
               </Form>
