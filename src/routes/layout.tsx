@@ -6,9 +6,14 @@ export { useUser } from "~/lib/user";
 
 export const onRequest: RequestHandler = async (req) => {
   const supabase = createSupabaseServerClient(req);
-  const { data, error } = await supabase.auth.getUser();
+  const { data, error } = await supabase.auth.getSession();
   if (error) throw req.error(500, error.message);
-  req.sharedMap.set("user", data.user);
+  if (data.session) {
+    const { data, error } = await supabase.auth.getUser();
+    if (error) throw req.error(500, error.message);
+    req.sharedMap.set("user", data.user);
+  } else req.sharedMap.set('user', null);
+  req.sharedMap.set('session', data.session)
 };
 
 export default component$(() => {
