@@ -1,0 +1,38 @@
+@media (min-width: 48rem) {
+  div.open {
+    margin-left: 16rem;
+  }
+  div.closed {
+    margin-left: 0rem;
+  }
+}
+
+ul.org-dropdown {
+  @apply absolute mt-2 w-[calc(100%-2rem)] rounded-md border border-gray-500 bg-white px-4 py-2 text-black transition-opacity duration-100 dark:bg-gray-900 dark:text-white;
+}
+
+ul.org-dropdown li a {
+  @apply my-1 block w-full rounded-md border border-transparent bg-white px-2 py-1 hover:bg-gray-100 dark:bg-gray-900 dark:hover:bg-gray-800;
+}
+
+ul.org-dropdown li a.active {
+  @apply text-purple-500;
+}
+
+ul.subgroup-list {
+  @apply mx-4 flex flex-col justify-center gap-1;
+}
+
+ul.subgroup-list li {
+  @apply w-full;
+}
+
+ul.subgroup-list li a {
+  @apply block w-full rounded-md border border-transparent bg-white px-3 py-2 hover:border-gray-500 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-800;
+}
+
+ul.subgroup-list li a.active {
+  @apply border-purple-500/50 bg-purple-100 text-purple-500 hover:bg-purple-200 dark:bg-purple-900/50 dark:hover:bg-purple-800/50;
+}
+
+@reference "../../global.css";
