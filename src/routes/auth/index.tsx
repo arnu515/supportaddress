@@ -4,8 +4,16 @@ import {
   createSupabaseServerClient,
 } from "~/lib/supabase";
 import styles from "../index.css?inline";
-import { Link, routeAction$, zod$, z, Form } from "@builder.io/qwik-city";
+import {
+  Link,
+  routeAction$,
+  zod$,
+  z,
+  Form,
+  useLocation,
+} from "@builder.io/qwik-city";
 import { useUser } from "~/lib/user";
+import { createBrowserClient } from "@supabase/ssr";
 
 type Step =
   | ["email"]
@@ -134,6 +142,8 @@ export default component$(() => {
   const user = useUser();
   const error = useSignal("");
 
+  const loc = useLocation();
+
   return (
     <div class="min-h-screen py-10">
       <div class="absolute inset-0 overflow-hidden">
@@ -205,7 +215,24 @@ export default component$(() => {
           <section class="space-y-6">
             {step.value[0] === "email" && (
               <div class="space-y-3">
-                <button class="flex w-full cursor-pointer items-center justify-center gap-4 rounded-lg border border-gray-600 bg-gray-800 px-4 py-2 text-white hover:bg-gray-700">
+                <button
+                  onClick$={() => {
+                    const supabase = createBrowserClient(
+                      import.meta.env.PUBLIC_SUPABASE_URL,
+                      import.meta.env.PUBLIC_SUPABASE_ANON_KEY,
+                    );
+                    supabase.auth.signInWithOAuth({
+                      provider: "github",
+                      options: {
+                        redirectTo: new URL(
+                          "/auth/callback",
+                          loc.url.origin,
+                        ).toString(),
+                      },
+                    });
+                  }}
+                  class="flex w-full cursor-pointer items-center justify-center gap-4 rounded-lg border border-gray-600 bg-gray-800 px-4 py-2 text-white hover:bg-gray-700"
+                >
                   <svg
                     role="img"
                     class="size-5 fill-white"
@@ -217,7 +244,24 @@ export default component$(() => {
                   </svg>
                   Continue with GitHub
                 </button>
-                <button class="flex w-full cursor-pointer items-center justify-center gap-4 rounded-lg bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700">
+                <button
+                  onClick$={() => {
+                    const supabase = createBrowserClient(
+                      import.meta.env.PUBLIC_SUPABASE_URL,
+                      import.meta.env.PUBLIC_SUPABASE_ANON_KEY,
+                    );
+                    supabase.auth.signInWithOAuth({
+                      provider: "discord",
+                      options: {
+                        redirectTo: new URL(
+                          "/auth/callback",
+                          loc.url.origin,
+                        ).toString(),
+                      },
+                    });
+                  }}
+                  class="flex w-full cursor-pointer items-center justify-center gap-4 rounded-lg bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700"
+                >
                   <svg
                     role="img"
                     class="size-5 fill-white"
