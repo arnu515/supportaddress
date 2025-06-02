@@ -299,31 +299,25 @@ export default component$(() => {
 
                 <button
                   type="submit"
-                  disabled={
-                    checkEmail.isRunning ||
-                    checkOtp.isRunning ||
-                    checkPassword.isRunning
-                  }
+                  disabled={checkEmail.isRunning}
                   class="flex w-full cursor-pointer items-center justify-center gap-2 rounded-md bg-gradient-to-r from-purple-500 to-blue-500 px-4 py-2 text-white hover:from-purple-600 hover:to-blue-600 disabled:cursor-not-allowed"
                 >
-                  {checkEmail.isRunning ||
-                    checkOtp.isRunning ||
-                    (checkPassword.isRunning && (
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="24"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="2"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        class="size-5 animate-spin"
-                      >
-                        <path d="M21 12a9 9 0 1 1-6.219-8.56" />
-                      </svg>
-                    ))}{" "}
+                  {checkEmail.isRunning && (
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      class="size-5 animate-spin"
+                    >
+                      <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+                    </svg>
+                  )}{" "}
                   Continue
                 </button>
               </Form>
@@ -495,31 +489,25 @@ export default component$(() => {
 
                 <button
                   type="submit"
-                  disabled={
-                    checkEmail.isRunning ||
-                    checkOtp.isRunning ||
-                    checkPassword.isRunning
-                  }
+                  disabled={checkOtp.isRunning}
                   class="flex w-full cursor-pointer items-center justify-center gap-2 rounded-md bg-gradient-to-r from-purple-500 to-blue-500 px-4 py-2 text-white hover:from-purple-600 hover:to-blue-600 disabled:cursor-not-allowed"
                 >
-                  {checkEmail.isRunning ||
-                    checkOtp.isRunning ||
-                    (checkPassword.isRunning && (
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="24"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="2"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        class="size-5 animate-spin"
-                      >
-                        <path d="M21 12a9 9 0 1 1-6.219-8.56" />
-                      </svg>
-                    ))}{" "}
+                  {checkOtp.isRunning && (
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      class="size-5 animate-spin"
+                    >
+                      <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+                    </svg>
+                  )}{" "}
                   Sign Up
                 </button>
               </Form>
@@ -586,31 +574,25 @@ export default component$(() => {
 
                 <button
                   type="submit"
-                  disabled={
-                    checkEmail.isRunning ||
-                    checkOtp.isRunning ||
-                    checkPassword.isRunning
-                  }
+                  disabled={checkPassword.isRunning}
                   class="flex w-full cursor-pointer items-center justify-center gap-2 rounded-md bg-gradient-to-r from-purple-500 to-blue-500 px-4 py-2 text-white hover:from-purple-600 hover:to-blue-600 disabled:cursor-not-allowed"
                 >
-                  {checkEmail.isRunning ||
-                    checkOtp.isRunning ||
-                    (checkPassword.isRunning && (
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="24"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="2"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        class="size-5 animate-spin"
-                      >
-                        <path d="M21 12a9 9 0 1 1-6.219-8.56" />
-                      </svg>
-                    ))}{" "}
+                  {checkPassword.isRunning && (
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      class="size-5 animate-spin"
+                    >
+                      <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+                    </svg>
+                  )}{" "}
                   Continue
                 </button>
               </Form>
