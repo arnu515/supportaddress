@@ -28,9 +28,12 @@ export default () => (
         >
           Contact
         </Link>
-        <button class="cursor-pointer rounded-lg border border-purple-400 bg-white px-4 py-2 text-purple-500 transition-colors duration-300 hover:bg-purple-400 hover:text-white">
+        <Link
+          href="/auth"
+          class="cursor-pointer rounded-lg border border-purple-400 bg-white px-4 py-2 text-purple-500 transition-colors duration-300 hover:bg-purple-400 hover:text-white"
+        >
           Sign In
-        </button>
+        </Link>
       </div>
     </div>
   </nav>
