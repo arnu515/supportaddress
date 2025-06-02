@@ -20,9 +20,7 @@ type Step =
   //       email vvvvvv
   | ["password", string]
   //  email vvvvvv
-  | ["otp", string]
-  //        pw-token vvvvvv
-  | ["set-password", string];
+  | ["otp", string];
 
 export const useCheckEmail = routeAction$(
   async ({ email }, req) => {
@@ -33,11 +31,9 @@ export const useCheckEmail = routeAction$(
       .select("id")
       .eq("email", email)
       .maybeSingle();
-    console.log(error, data);
     if (error) return req.fail(500, { message: error.message });
     if (!data) {
-      const { data, error } = await supabase.auth.signInWithOtp({ email });
-      console.log(data);
+      const { error } = await supabase.auth.signInWithOtp({ email });
       if (error) return req.fail(500, { message: error.message });
       return ["otp", email] as Step;
     } else {
