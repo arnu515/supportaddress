@@ -12,8 +12,8 @@ export const onRequest: RequestHandler = async (req) => {
     const { data, error } = await supabase.auth.getUser();
     if (error) throw req.error(500, error.message);
     req.sharedMap.set("user", data.user);
-  } else req.sharedMap.set('user', null);
-  req.sharedMap.set('session', data.session)
+  } else req.sharedMap.set("user", null);
+  req.sharedMap.set("session", data.session);
 };
 
 export default component$(() => {
