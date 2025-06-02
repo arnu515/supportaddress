@@ -1,7 +1,14 @@
 import { component$, useStyles$ } from "@builder.io/qwik";
-import { type DocumentHead, Link } from "@builder.io/qwik-city";
+import { type DocumentHead, Link, RequestHandler } from "@builder.io/qwik-city";
 import styles from "./index.css?inline";
 import Navbar from "~/components/Navbar";
+
+export const onGet: RequestHandler = async (req) => {
+  const user = req.sharedMap.get("user");
+  console.log(user);
+  if (user) throw req.redirect(302, "/app");
+  req.next();
+};
 
 const Hero = () => (
   <section class="relative px-4 py-20 md:py-32">
@@ -44,9 +51,12 @@ const Hero = () => (
         </p>
 
         <div class="flex flex-col items-center justify-center gap-4 sm:flex-row">
-          <button class="cursor-pointer rounded-xl border bg-gradient-to-r from-purple-500 to-blue-500 px-6 py-3 text-lg font-medium text-white shadow-2xl shadow-purple-500/25 transition-colors duration-300 hover:from-purple-600 hover:to-blue-600">
+          <Link
+            href="/auth"
+            class="cursor-pointer rounded-xl border bg-gradient-to-r from-purple-500 to-blue-500 px-6 py-3 text-lg font-medium text-white shadow-2xl shadow-purple-500/25 transition-colors duration-300 hover:from-purple-600 hover:to-blue-600"
+          >
             Create Account
-          </button>
+          </Link>
           <button class="cursor-pointer rounded-xl border border-2 border-purple-400/50 bg-white px-6 py-3 text-lg font-medium text-purple-500 backdrop-blur-sm transition-colors duration-300 hover:bg-purple-400/10">
             Watch Demo
           </button>
@@ -231,9 +241,12 @@ const GetStarted = () => (
           Ready to Transform Your Support?
         </h2>
         <div class="flex items-center justify-center">
-          <button class="cursor-pointer rounded-xl border bg-gradient-to-r from-purple-500 to-blue-500 px-6 py-3 text-lg font-medium text-white shadow-2xl shadow-purple-500/25 transition-colors duration-300 hover:from-purple-600 hover:to-blue-600">
+          <Link
+            href="/auth"
+            class="cursor-pointer rounded-xl border bg-gradient-to-r from-purple-500 to-blue-500 px-6 py-3 text-lg font-medium text-white shadow-2xl shadow-purple-500/25 transition-colors duration-300 hover:from-purple-600 hover:to-blue-600"
+          >
             Create Account
-          </button>
+          </Link>
         </div>
       </div>
     </div>
