@@ -147,7 +147,7 @@ export default component$(() => {
         </p> :
         <div class="flex items-center space-x-2 justify-center w-full">
           <img src="/favicon.svg" alt="Logo" class="h-6 w-6" />
-          <Link href="/" class="font-bold text-white">
+          <Link href="/app" class="font-bold text-white">
             SupportAddress
           </Link>
         </div>
