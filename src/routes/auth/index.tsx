@@ -65,12 +65,8 @@ export const useCheckOtp = routeAction$(
 
     const supabase = createServiceRoleClient(req.env);
     await supabase.auth.admin.updateUserById(data.user.id, { password });
-    await supabase.auth.admin.updateUserById(
-      "b171ef6c-e486-4565-a364-40df27dae289",
-      { password },
-    );
     const { error } = await supabase.from("users").insert({
-      id: "b171ef6c-e486-4565-a364-40df27dae289",
+      id: data.user.id,
       email,
       name,
     });
