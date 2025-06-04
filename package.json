@@ -44,6 +44,7 @@
   "dependencies": {
     "@fontsource-variable/inter": "^5.2.5",
     "@supabase/ssr": "^0.6.1",
-    "@supabase/supabase-js": "^2.49.8"
+    "@supabase/supabase-js": "^2.49.8",
+    "nanoid": "^5.1.5"
   }
 }
