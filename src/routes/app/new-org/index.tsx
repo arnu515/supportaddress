@@ -47,16 +47,16 @@ export const useCreateOrg = routeAction$(async ({name, description, link}, req) 
   const {error} = await supabase.from("organisations").insert({
     id,
     name,
-    description,
-    link,
+    description: description || undefined,
+    link: link || undefined,
     owner_id: user.id
   })
   if (error) return req.fail(500, {message: error.message})
   throw req.redirect(302, "/app/" + id)
 }, zod$({
   name: z.string().trim().min(4).max(255),
-  description: z.string().trim().min(10).max(1024).optional(),
-  link: z.string().url().trim().max(255).optional()
+  description: z.string().trim().min(10).max(1024).optional().or(z.literal('')),
+  link: z.string().url().trim().max(255).optional().or(z.literal(''))
 }))
 
 export const useCodeFromQueryString = routeLoader$((req) => {
