@@ -13,7 +13,7 @@ export const useJoinOrg = routeAction$(
     const { data, error } = await supabase
       .from("org_invites")
       .select("org_id, created_at")
-      .eq("user_id", user.id)
+      .eq("email", user.email)
       .eq("id", code)
       .maybeSingle();
     if (error) return req.fail(500, { message: error.message });
