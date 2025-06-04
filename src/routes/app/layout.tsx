@@ -1,6 +1,7 @@
 import {
   Slot,
   component$,
+  useComputed$,
   useSignal,
   useStylesScoped$,
 } from "@builder.io/qwik";
@@ -89,10 +90,12 @@ export default component$(() => {
   const sidebarOpen = useSignal(true);
   const orgDropdownOpen = useSignal(false);
 
+  const onNewOrg = useComputed$(() => loc.url.pathname.startsWith("/app/new-org"))
+
   return (
     <div class="min-h-screen bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-gray-100">
       <nav class="fixed top-0 right-0 left-0 z-30 flex h-12 items-center gap-4 border-b border-gray-200 bg-gray-100 px-4 text-black backdrop-blur-sm dark:border-gray-700 dark:bg-gray-800/90 dark:text-white">
-        <button
+        {!onNewOrg &&<button
           class="cursor-pointer rounded-md border border-transparent bg-transparent p-2 transition-colors duration-300 hover:bg-gray-200 dark:hover:bg-gray-700"
           onClick$={() => (sidebarOpen.value = !sidebarOpen.value)}
         >
@@ -128,15 +131,22 @@ export default component$(() => {
             <path d="m6 6 12 12" />
           </svg>
           <span class="sr-only">Toggle Sidebar</span>
-        </button>
+        </button>}
 
-        <p class="mx-auto max-w-[50%] truncate text-center text-sm font-medium">
-          {org.value?.name}
-        </p>
+        {org.value?.name ? <p class="mx-auto max-w-[50%] truncate text-center text-sm font-medium">
+          {org.value.name}
+        </p> :
+        <div class="flex items-center space-x-2 justify-center w-full">
+          <img src="/favicon.svg" alt="Logo" class="h-6 w-6" />
+          <Link href="/" class="font-bold text-white">
+            SupportAddress
+          </Link>
+        </div>
+        }
       </nav>
 
       <main class="pt-12">
-        <aside
+        {!onNewOrg && <aside
           class={`fixed top-12 left-0 z-10 flex h-[calc(100vh-3rem)] w-64 flex-col gap-4 border-r border-gray-200 bg-gray-50 text-black backdrop-blur-sm transition-transform duration-300 dark:border-gray-700 dark:bg-gray-800/50 dark:text-white ${sidebarOpen.value ? "translate-x-0" : "-translate-x-full"}`}
         >
           <div class="relative px-4 py-6">
@@ -280,9 +290,9 @@ export default component$(() => {
               </Link>
             </li>
           </ul>
-        </aside>
+        </aside>}
         <div
-          class={`transition-all duration-300 ${sidebarOpen.value ? "open" : "closed"}`}
+          class={`transition-all duration-300 ${!onNewOrg && sidebarOpen.value ? "open" : "closed"}`}
         >
           <Slot />
         </div>
