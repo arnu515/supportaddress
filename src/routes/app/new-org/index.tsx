@@ -71,7 +71,7 @@ export default component$(() => {
     <div class="mx-auto max-w-screen-sm py-10">
       <Link
         href="/app/settings"
-        class="mb-8 ml-auto flex w-max items-center gap-2 text-purple-300 transition-colors duration-300 hover:text-purple-500"
+        class="mb-8 ml-auto flex w-max items-center gap-2 text-purple-300 transition-colors duration-300 hover:text-purple-500 mr-4"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -91,7 +91,7 @@ export default component$(() => {
         Settings
       </Link>
 
-      <section class="rounded-xl border border-purple-400/20 bg-white/5 px-6 py-8 shadow-2xl shadow-sm backdrop-blur-xl">
+      <section class="rounded-xl border border-purple-400/20 bg-white/5 px-6 py-8 shadow-2xl shadow-sm backdrop-blur-xl m-4">
         <h1 class="mb-2 text-center text-2xl font-bold text-white">
           {mode.value ? "Join" : "Create"} an Organisation
         </h1>
@@ -204,7 +204,7 @@ export default component$(() => {
               <textarea rows={3} name="description" id="description" placeholder="Enter something about your organisation" />
             </fieldset>
 
-            <div class="flex md:col-span-2 items-center gap-2">
+            <div class="flex flex-col md:flex-row md:col-span-2 items-center gap-2">
             <button
               type="button"
               onClick$={() => (mode.value = true)}
