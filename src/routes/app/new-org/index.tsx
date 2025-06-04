@@ -1,6 +1,9 @@
-import { component$, useSignal } from "@builder.io/qwik";
+import { component$, useSignal, useStylesScoped$ } from "@builder.io/qwik";
 import { Form, Link, routeAction$, zod$, z } from "@builder.io/qwik-city";
 import { createSupabaseServerClient } from "~/lib/supabase";
+import styles from "./index.css?inline";
+import { User } from "@supabase/supabase-js";
+import { nanoid } from "nanoid";
 
 export const useJoinOrg = routeAction$(
   async ({ code }, req) => {
@@ -36,10 +39,33 @@ export const useJoinOrg = routeAction$(
   }),
 );
 
+export const useCreateOrg = routeAction$(async ({name, description, link}, req) => {
+  const user = req.sharedMap.get('user') as User | null
+  if (!user) throw req.redirect(303, '/auth')
+  const supabase = createSupabaseServerClient(req)
+  const id = nanoid()
+  const {error} = await supabase.from("organisations").insert({
+    id,
+    name,
+    description,
+    link,
+    owner_id: user.id
+  })
+  if (error) return req.fail(500, {message: error.message})
+  throw req.redirect(302, "/app/" + id)
+}, zod$({
+  name: z.string().trim().min(4).max(255),
+  description: z.string().trim().min(10).max(1024).optional(),
+  link: z.string().url().trim().max(255).optional()
+}))
+
 export default component$(() => {
+  useStylesScoped$(styles);
+  
   // true -> join | false -> create
   const mode = useSignal(true);
   const join = useJoinOrg();
+  const create = useCreateOrg()
 
   return (
     <div class="mx-auto max-w-screen-sm py-10">
@@ -86,9 +112,15 @@ export default component$(() => {
             <p class="text-sm">{join.value.message}</p>
           </div>
         )}
+        {create.value?.failed && create.value?.message && (
+          <div class="my-4 flex flex-col justify-center rounded-md border border-red-500 bg-red-500/20 px-4 py-2 text-white shadow-sm">
+            <h3>An error occured!</h3>
+            <p class="text-sm">{create.value.message}</p>
+          </div>
+        )}
 
         {mode.value ? (
-          <Form class="space-y-2">
+          <Form class="space-y-2" action={join}>
             <div class="space-y-2">
               <div class="relative">
                 <svg
@@ -114,7 +146,7 @@ export default component$(() => {
                   aria-label="Invite Code"
                   placeholder="Enter your invite code"
                   maxLength={9}
-                  class="w-full rounded-md border border-purple-400/30 bg-white/5 py-2 pr-4 pl-10 text-white placeholder:text-gray-400 focus:border-purple-400"
+                  class="pl-10!"
                   required
                 />
               </div>
@@ -157,7 +189,57 @@ export default component$(() => {
               Create an organisation
             </button>
           </Form>
-        ) : undefined}
+        ) :
+          <Form class="space-y-2 grid grid-cols-1 sm:grid-cols-2 gap-2" action={create}>
+            <fieldset class="space-y-2">
+              <label for="name">Organisation name</label>
+              <input type="text" name="name" id="name" placeholder="Example Org" required />
+            </fieldset>
+            <fieldset class="space-y-2">
+              <label for="link">Link (optional)</label>
+              <input type="url" name="link" id="link" placeholder="https://example.org" />
+            </fieldset>
+            <fieldset class="space-y-2 md:col-span-2">
+              <label for="description">Description (optional)</label>
+              <textarea rows={3} name="description" id="description" placeholder="Enter something about your organisation" />
+            </fieldset>
+
+            <div class="flex md:col-span-2 items-center gap-2">
+            <button
+              type="button"
+              onClick$={() => (mode.value = true)}
+              disabled={create.isRunning}
+              class="flex w-full cursor-pointer items-center justify-center gap-2 rounded-md bg-gray-300 px-4 py-2 text-white disabled:cursor-not-allowed dark:bg-gray-700"
+            >
+              Go back
+            </button>
+
+            <button
+              type="submit"
+              disabled={create.isRunning}
+              class="flex w-full cursor-pointer items-center justify-center gap-2 rounded-md bg-gradient-to-r from-purple-500 to-blue-500 px-4 py-2 text-white hover:from-purple-600 hover:to-blue-600 disabled:cursor-not-allowed"
+            >
+              {create.isRunning && (
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="size-5 animate-spin"
+                >
+                  <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+                </svg>
+              )}{" "}
+              Create Organisation
+            </button>
+              </div>
+          </Form>
+      }
       </section>
     </div>
   );
