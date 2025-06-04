@@ -1,6 +1,6 @@
 import { component$, useSignal, useStylesScoped$ } from "@builder.io/qwik";
 import { Form, Link, routeAction$, zod$, z, routeLoader$ } from "@builder.io/qwik-city";
-import { createSupabaseServerClient } from "~/lib/supabase";
+import { createServiceRoleClient, createSupabaseServerClient } from "~/lib/supabase";
 import styles from "./index.css?inline";
 import { User } from "@supabase/supabase-js";
 import { nanoid } from "nanoid";
@@ -9,7 +9,7 @@ export const useJoinOrg = routeAction$(
   async ({ code }, req) => {
     const user = req.sharedMap.get("user");
     if (!user) throw req.redirect(303, "/auth");
-    const supabase = createSupabaseServerClient(req, { serviceRole: true });
+    const supabase = createServiceRoleClient(req.env);
     const { data, error } = await supabase
       .from("org_invites")
       .select("org_id, created_at")
