@@ -95,7 +95,7 @@ export default component$(() => {
   return (
     <div class="min-h-screen bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-gray-100">
       <nav class="fixed top-0 right-0 left-0 z-30 flex h-12 items-center gap-4 border-b border-gray-200 bg-gray-100 px-4 text-black backdrop-blur-sm dark:border-gray-700 dark:bg-gray-800/90 dark:text-white">
-        {!onNewOrg &&<button
+        {!onNewOrg.value &&<button
           class="cursor-pointer rounded-md border border-transparent bg-transparent p-2 transition-colors duration-300 hover:bg-gray-200 dark:hover:bg-gray-700"
           onClick$={() => (sidebarOpen.value = !sidebarOpen.value)}
         >
@@ -146,7 +146,7 @@ export default component$(() => {
       </nav>
 
       <main class="pt-12">
-        {!onNewOrg && <aside
+        {!onNewOrg.value && <aside
           class={`fixed top-12 left-0 z-10 flex h-[calc(100vh-3rem)] w-64 flex-col gap-4 border-r border-gray-200 bg-gray-50 text-black backdrop-blur-sm transition-transform duration-300 dark:border-gray-700 dark:bg-gray-800/50 dark:text-white ${sidebarOpen.value ? "translate-x-0" : "-translate-x-full"}`}
         >
           <div class="relative px-4 py-6">
@@ -292,7 +292,7 @@ export default component$(() => {
           </ul>
         </aside>}
         <div
-          class={`transition-all duration-300 ${!onNewOrg && sidebarOpen.value ? "open" : "closed"}`}
+          class={`transition-all duration-300 ${!onNewOrg.value && sidebarOpen.value ? "open" : "closed"}`}
         >
           <Slot />
         </div>
