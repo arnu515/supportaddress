@@ -1,6 +1,16 @@
 import { component$, useSignal, useStylesScoped$ } from "@builder.io/qwik";
-import { Form, Link, routeAction$, zod$, z, routeLoader$ } from "@builder.io/qwik-city";
-import { createServiceRoleClient, createSupabaseServerClient } from "~/lib/supabase";
+import {
+  Form,
+  Link,
+  routeAction$,
+  zod$,
+  z,
+  routeLoader$,
+} from "@builder.io/qwik-city";
+import {
+  createServiceRoleClient,
+  createSupabaseServerClient,
+} from "~/lib/supabase";
 import styles from "./index.css?inline";
 import { User } from "@supabase/supabase-js";
 import { nanoid } from "nanoid";
@@ -39,50 +49,60 @@ export const useJoinOrg = routeAction$(
   }),
 );
 
-export const useCreateOrg = routeAction$(async ({name, description, link}, req) => {
-  const user = req.sharedMap.get('user') as User | null
-  if (!user) throw req.redirect(303, '/auth')
-  const supabase = createSupabaseServerClient(req)
-  const id = nanoid()
-  const {error} = await supabase.from("organisations").insert({
-    id,
-    name,
-    description: description || undefined,
-    link: link || undefined,
-    owner_id: user.id
-  })
-  if (error) return req.fail(500, {message: error.message})
-  throw req.redirect(302, "/app/" + id)
-}, zod$({
-  name: z.string().trim().min(4).max(255),
-  description: z.string().trim().min(10).max(1024).optional().or(z.literal('')),
-  link: z.string().url().trim().max(255).optional().or(z.literal(''))
-}))
+export const useCreateOrg = routeAction$(
+  async ({ name, description, link }, req) => {
+    const user = req.sharedMap.get("user") as User | null;
+    if (!user) throw req.redirect(303, "/auth");
+    const supabase = createSupabaseServerClient(req);
+    const id = nanoid();
+    const { error } = await supabase.from("organisations").insert({
+      id,
+      name,
+      description: description || undefined,
+      link: link || undefined,
+      owner_id: user.id,
+    });
+    if (error) return req.fail(500, { message: error.message });
+    throw req.redirect(302, "/app/" + id);
+  },
+  zod$({
+    name: z.string().trim().min(4).max(255),
+    description: z
+      .string()
+      .trim()
+      .min(10)
+      .max(1024)
+      .optional()
+      .or(z.literal("")),
+    link: z.string().url().trim().max(255).optional().or(z.literal("")),
+  }),
+);
 
 export const useCodeFromQueryString = routeLoader$((req) => {
-  const data = z.string()
-      .length(9)
-      .trim()
-      .toUpperCase()
-      .regex(/[A-Z0-9]+/g)
-      .safeParse(req.url.searchParams.get('code'))
-  return (data.success) ? data.data : undefined
-})
+  const data = z
+    .string()
+    .length(9)
+    .trim()
+    .toUpperCase()
+    .regex(/[A-Z0-9]+/g)
+    .safeParse(req.url.searchParams.get("code"));
+  return data.success ? data.data : undefined;
+});
 
 export default component$(() => {
   useStylesScoped$(styles);
-  
+
   // true -> join | false -> create
-  const code = useCodeFromQueryString()
+  const code = useCodeFromQueryString();
   const mode = useSignal(true);
   const join = useJoinOrg();
-  const create = useCreateOrg()
+  const create = useCreateOrg();
 
   return (
     <div class="mx-auto max-w-screen-sm py-10">
       <Link
         href="/app/settings"
-        class="mb-8 ml-auto flex w-max items-center gap-2 text-purple-300 transition-colors duration-300 hover:text-purple-500 mr-4"
+        class="mr-4 mb-8 ml-auto flex w-max items-center gap-2 text-purple-300 transition-colors duration-300 hover:text-purple-500"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -102,14 +122,15 @@ export default component$(() => {
         Settings
       </Link>
 
-      <section class="rounded-xl border border-purple-400/20 bg-white/5 px-6 py-8 shadow-2xl shadow-sm backdrop-blur-xl m-4">
+      <section class="m-4 rounded-xl border border-purple-400/20 bg-white/5 px-6 py-8 shadow-2xl shadow-sm backdrop-blur-xl">
         <h1 class="mb-2 text-center text-2xl font-bold text-white">
           {mode.value ? "Join" : "Create"} an Organisation
         </h1>
         <p class="mx-auto mt-2 mb-4 max-w-[80%] text-center text-sm text-gray-300">
           {mode.value ? (
             <>
-              If you have an organisation's invite code, enter it below.<br />
+              If you have an organisation's invite code, enter it below.
+              <br />
               If you were expecting an invite, check your email's spam folder.
             </>
           ) : (
@@ -200,11 +221,20 @@ export default component$(() => {
               Create an organisation
             </button>
           </Form>
-        ) :
-          <Form class="space-y-2 grid grid-cols-1 sm:grid-cols-2 gap-2" action={create}>
+        ) : (
+          <Form
+            class="grid grid-cols-1 gap-2 space-y-2 sm:grid-cols-2"
+            action={create}
+          >
             <fieldset class="space-y-2">
               <label for="name">Organisation name</label>
-              <input type="text" name="name" id="name" placeholder="Example Org" required />
+              <input
+                type="text"
+                name="name"
+                id="name"
+                placeholder="Example Org"
+                required
+              />
               {create.value?.fieldErrors?.name && (
                 <p class="mt-2 text-sm text-red-500">
                   {create.value.fieldErrors.name}
@@ -213,7 +243,12 @@ export default component$(() => {
             </fieldset>
             <fieldset class="space-y-2">
               <label for="link">Link (optional)</label>
-              <input type="url" name="link" id="link" placeholder="https://example.org" />
+              <input
+                type="url"
+                name="link"
+                id="link"
+                placeholder="https://example.org"
+              />
               {create.value?.fieldErrors?.link && (
                 <p class="mt-2 text-sm text-red-500">
                   {create.value.fieldErrors.link}
@@ -222,50 +257,55 @@ export default component$(() => {
             </fieldset>
             <fieldset class="space-y-2 md:col-span-2">
               <label for="description">Description (optional)</label>
-              <textarea rows={3} name="description" id="description" placeholder="Enter something about your organisation" />
-              {create.value?.fieldErrors?.description&& (
+              <textarea
+                rows={3}
+                name="description"
+                id="description"
+                placeholder="Enter something about your organisation"
+              />
+              {create.value?.fieldErrors?.description && (
                 <p class="mt-2 text-sm text-red-500">
                   {create.value.fieldErrors.description}
                 </p>
               )}
             </fieldset>
 
-            <div class="flex flex-col md:flex-row md:col-span-2 items-center gap-2">
-            <button
-              type="button"
-              onClick$={() => (mode.value = true)}
-              disabled={create.isRunning}
-              class="flex w-full cursor-pointer items-center justify-center gap-2 rounded-md bg-gray-300 px-4 py-2 text-white disabled:cursor-not-allowed dark:bg-gray-700"
-            >
-              Go back
-            </button>
+            <div class="flex flex-col items-center gap-2 md:col-span-2 md:flex-row">
+              <button
+                type="button"
+                onClick$={() => (mode.value = true)}
+                disabled={create.isRunning}
+                class="flex w-full cursor-pointer items-center justify-center gap-2 rounded-md bg-gray-300 px-4 py-2 text-white disabled:cursor-not-allowed dark:bg-gray-700"
+              >
+                Go back
+              </button>
 
-            <button
-              type="submit"
-              disabled={create.isRunning}
-              class="flex w-full cursor-pointer items-center justify-center gap-2 rounded-md bg-gradient-to-r from-purple-500 to-blue-500 px-4 py-2 text-white hover:from-purple-600 hover:to-blue-600 disabled:cursor-not-allowed"
-            >
-              {create.isRunning && (
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  class="size-5 animate-spin"
-                >
-                  <path d="M21 12a9 9 0 1 1-6.219-8.56" />
-                </svg>
-              )}{" "}
-              Create Organisation
-            </button>
-              </div>
+              <button
+                type="submit"
+                disabled={create.isRunning}
+                class="flex w-full cursor-pointer items-center justify-center gap-2 rounded-md bg-gradient-to-r from-purple-500 to-blue-500 px-4 py-2 text-white hover:from-purple-600 hover:to-blue-600 disabled:cursor-not-allowed"
+              >
+                {create.isRunning && (
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="size-5 animate-spin"
+                  >
+                    <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+                  </svg>
+                )}{" "}
+                Create Organisation
+              </button>
+            </div>
           </Form>
-      }
+        )}
       </section>
     </div>
   );

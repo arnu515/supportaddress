@@ -13,7 +13,11 @@ export const onRequest: RequestHandler = async (req) => {
     const { data, error } = await supabase.auth.getUser();
     if (error) throw req.error(500, error.message);
     if (data.user) {
-      const { data: profile, error } = await supabase.from("users").select("*").eq("id", data.user.id).maybeSingle()
+      const { data: profile, error } = await supabase
+        .from("users")
+        .select("*")
+        .eq("id", data.user.id)
+        .maybeSingle();
       if (error) throw req.error(500, error.message);
       if (profile) {
         req.sharedMap.set("user", { ...data.user, profile } satisfies User);

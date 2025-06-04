@@ -15,5 +15,5 @@ export const useSubgroup = routeLoader$(async (req) => {
 });
 
 export default component$(() => {
-  return ( <Slot /> );
+  return <Slot />;
 });

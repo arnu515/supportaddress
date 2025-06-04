@@ -1,5 +1,13 @@
 import { component$, useStylesScoped$ } from "@builder.io/qwik";
-import { Form, Link, routeAction$, zod$, z, routeLoader$, useNavigate } from "@builder.io/qwik-city";
+import {
+  Form,
+  Link,
+  routeAction$,
+  zod$,
+  z,
+  routeLoader$,
+  useNavigate,
+} from "@builder.io/qwik-city";
 import { createSupabaseServerClient } from "~/lib/supabase";
 import styles from "../../new-org/index.css?inline";
 import { User } from "@supabase/supabase-js";
@@ -7,47 +15,56 @@ import { nanoid } from "nanoid";
 import { useCurrentOrg } from "../../layout";
 
 export const useIsOwnerGuard = routeLoader$(async (req) => {
-  const user = req.sharedMap.get('user') as User | null
-  if (!user) throw req.redirect(303, '/auth')
+  const user = req.sharedMap.get("user") as User | null;
+  if (!user) throw req.redirect(303, "/auth");
   const org = await req.resolveValue(useCurrentOrg);
-  if (!org) throw req.redirect(303, '/app')
-  if (org.owner_id !== user.id) throw req.error(404, "Page not found")
-})
+  if (!org) throw req.redirect(303, "/app");
+  if (org.owner_id !== user.id) throw req.error(404, "Page not found");
+});
 
-export const useCreateSubgroup = routeAction$(async ({name, description, link}, req) => {
-  const user = req.sharedMap.get('user') as User | null
-  if (!user) throw req.redirect(303, '/auth')
-  const {orgId} = req.params
-  const supabase = createSupabaseServerClient(req)
-  const id = nanoid()
-  const {error} = await supabase.from("subgroups").insert({
-    id,
-    name,
-    description: description || undefined,
-    link: link || undefined,
-    org_id: orgId,
-    owner_id: user.id
-  })
-  if (error) return req.fail(500, {message: error.message})
-  throw req.redirect(302, `/app/${orgId}/${id}`)
-}, zod$({
-  name: z.string().trim().min(4).max(255),
-  description: z.string().trim().min(10).max(1024).optional().or(z.literal('')),
-  link: z.string().url().trim().max(255).optional().or(z.literal(''))
-}))
+export const useCreateSubgroup = routeAction$(
+  async ({ name, description, link }, req) => {
+    const user = req.sharedMap.get("user") as User | null;
+    if (!user) throw req.redirect(303, "/auth");
+    const { orgId } = req.params;
+    const supabase = createSupabaseServerClient(req);
+    const id = nanoid();
+    const { error } = await supabase.from("subgroups").insert({
+      id,
+      name,
+      description: description || undefined,
+      link: link || undefined,
+      org_id: orgId,
+      owner_id: user.id,
+    });
+    if (error) return req.fail(500, { message: error.message });
+    throw req.redirect(302, `/app/${orgId}/${id}`);
+  },
+  zod$({
+    name: z.string().trim().min(4).max(255),
+    description: z
+      .string()
+      .trim()
+      .min(10)
+      .max(1024)
+      .optional()
+      .or(z.literal("")),
+    link: z.string().url().trim().max(255).optional().or(z.literal("")),
+  }),
+);
 
 export default component$(() => {
   useStylesScoped$(styles);
   useIsOwnerGuard();
-  
-  const create = useCreateSubgroup()
-  const nav = useNavigate()
+
+  const create = useCreateSubgroup();
+  const nav = useNavigate();
 
   return (
     <div class="mx-auto max-w-screen-sm py-10">
       <Link
         href="/app/settings"
-        class="mb-8 ml-auto mr-4 flex w-max items-center gap-2 text-purple-300 transition-colors duration-300 hover:text-purple-500"
+        class="mr-4 mb-8 ml-auto flex w-max items-center gap-2 text-purple-300 transition-colors duration-300 hover:text-purple-500"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -67,12 +84,13 @@ export default component$(() => {
         Settings
       </Link>
 
-      <section class="rounded-xl border border-purple-400/20 bg-white/5 px-6 py-8 shadow-2xl shadow-sm backdrop-blur-xl m-4">
+      <section class="m-4 rounded-xl border border-purple-400/20 bg-white/5 px-6 py-8 shadow-2xl shadow-sm backdrop-blur-xl">
         <h1 class="mb-2 text-center text-2xl font-bold text-white">
           Create a Subgroup
         </h1>
         <p class="mx-auto mt-2 mb-4 max-w-[80%] text-center text-sm text-gray-300">
-          Create a subgroup in this organisation to organise support tickets and agents.
+          Create a subgroup in this organisation to organise support tickets and
+          agents.
         </p>
 
         {create.value?.failed && create.value?.message && (
@@ -82,37 +100,61 @@ export default component$(() => {
           </div>
         )}
 
-          <Form class="space-y-2 grid grid-cols-1 sm:grid-cols-2 gap-2" action={create}>
-            <fieldset class="space-y-2">
-              <label for="name">Subgroup name</label>
-              <input type="text" name="name" id="name" placeholder="Example Subgroup" required />
-              {create.value?.fieldErrors?.name && (
-                <p class="mt-2 text-sm text-red-500">
-                  {create.value.fieldErrors.name}
-                </p>
-              )}
-            </fieldset>
-            <fieldset class="space-y-2">
-              <label for="link">Link (optional)</label>
-              <input type="url" name="link" id="link" placeholder="https://sub.example.org" />
-              {create.value?.fieldErrors?.link && (
-                <p class="mt-2 text-sm text-red-500">
-                  {create.value.fieldErrors.link}
-                </p>
-              )}
-            </fieldset>
-            <fieldset class="space-y-2 md:col-span-2">
-              <label for="description">Description (optional)</label>
-              <textarea rows={3} name="description" id="description" placeholder="This subgroup is about ..." />
-              {create.value?.fieldErrors?.description&& (
-                <p class="mt-2 text-sm text-red-500">
-                  {create.value.fieldErrors.description}
-                </p>
-              )}
-              <p class="text-gray-500"><small class="text-sm">Providing a helpful description will enable AI to automatically sort support tickets as they come in.</small></p>
-            </fieldset>
+        <Form
+          class="grid grid-cols-1 gap-2 space-y-2 sm:grid-cols-2"
+          action={create}
+        >
+          <fieldset class="space-y-2">
+            <label for="name">Subgroup name</label>
+            <input
+              type="text"
+              name="name"
+              id="name"
+              placeholder="Example Subgroup"
+              required
+            />
+            {create.value?.fieldErrors?.name && (
+              <p class="mt-2 text-sm text-red-500">
+                {create.value.fieldErrors.name}
+              </p>
+            )}
+          </fieldset>
+          <fieldset class="space-y-2">
+            <label for="link">Link (optional)</label>
+            <input
+              type="url"
+              name="link"
+              id="link"
+              placeholder="https://sub.example.org"
+            />
+            {create.value?.fieldErrors?.link && (
+              <p class="mt-2 text-sm text-red-500">
+                {create.value.fieldErrors.link}
+              </p>
+            )}
+          </fieldset>
+          <fieldset class="space-y-2 md:col-span-2">
+            <label for="description">Description (optional)</label>
+            <textarea
+              rows={3}
+              name="description"
+              id="description"
+              placeholder="This subgroup is about ..."
+            />
+            {create.value?.fieldErrors?.description && (
+              <p class="mt-2 text-sm text-red-500">
+                {create.value.fieldErrors.description}
+              </p>
+            )}
+            <p class="text-gray-500">
+              <small class="text-sm">
+                Providing a helpful description will enable AI to automatically
+                sort support tickets as they come in.
+              </small>
+            </p>
+          </fieldset>
 
-            <div class="flex flex-col md:flex-row md:col-span-2 items-center gap-2">
+          <div class="flex flex-col items-center gap-2 md:col-span-2 md:flex-row">
             <button
               type="button"
               onClick$={() => nav(-1)}
@@ -145,8 +187,8 @@ export default component$(() => {
               )}{" "}
               Create
             </button>
-              </div>
-          </Form>
+          </div>
+        </Form>
       </section>
     </div>
   );
