@@ -66,18 +66,14 @@ export default component$(() => {
       </Link>
 
       <section class="rounded-xl border border-purple-400/20 bg-white/5 px-6 py-8 shadow-2xl shadow-sm backdrop-blur-xl">
-        <header class="mb-8 flex items-center justify-center space-x-2">
-          <img src="/favicon.svg" alt="Logo" class="h-8 w-8 rounded-lg" />
-          <span class="text-xl font-bold text-white">SupportAddress</span>
-        </header>
         <h1 class="mb-2 text-center text-2xl font-bold text-white">
           {mode.value ? "Join" : "Create"} an Organisation
         </h1>
         <p class="mx-auto mt-2 mb-4 max-w-[80%] text-center text-sm text-gray-300">
           {mode.value ? (
             <>
-              If you have an organisation's invite code, enter it below. If you
-              were expecting an invite, check your email's spam folder.
+              If you have an organisation's invite code, enter it below.<br />
+              If you were expecting an invite, check your email's spam folder.
             </>
           ) : (
             <>Create an organisation to start supporting your users</>
