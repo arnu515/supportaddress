@@ -4,6 +4,7 @@ import {
   useComputed$,
   useSignal,
   useStylesScoped$,
+  useVisibleTask$,
 } from "@builder.io/qwik";
 import { useRequiredUser } from "~/lib/user";
 import styles from "./layout.css?inline";
@@ -91,6 +92,14 @@ export default component$(() => {
   const orgDropdownOpen = useSignal(false);
 
   const onNewOrg = useComputed$(() => loc.url.pathname.startsWith("/app/new-org"))
+
+  useVisibleTask$(() => {
+    sidebarOpen.value = localStorage.getItem("sidebar-open") !== 'false'
+  })
+
+  useVisibleTask$(({track}) => {
+    localStorage.setItem("sidebar-open", track(() => sidebarOpen.value).toString())
+  })
 
   return (
     <div class="min-h-screen bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-gray-100">
