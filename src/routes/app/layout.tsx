@@ -134,7 +134,7 @@ export default component$(() => {
         </button>}
 
         {org.value?.name ? <p class="mx-auto max-w-[50%] truncate text-center text-sm font-medium">
-          {org.value.name}
+          <Link href={`/app/${org.value?.id}`}>{org.value.name}</Link>
         </p> :
         <div class="flex items-center space-x-2 justify-center w-full">
           <img src="/favicon.svg" alt="Logo" class="h-6 w-6" />
