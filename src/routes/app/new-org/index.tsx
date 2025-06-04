@@ -205,14 +205,29 @@ export default component$(() => {
             <fieldset class="space-y-2">
               <label for="name">Organisation name</label>
               <input type="text" name="name" id="name" placeholder="Example Org" required />
+              {create.value?.fieldErrors?.name && (
+                <p class="mt-2 text-sm text-red-500">
+                  {create.value.fieldErrors.name}
+                </p>
+              )}
             </fieldset>
             <fieldset class="space-y-2">
               <label for="link">Link (optional)</label>
               <input type="url" name="link" id="link" placeholder="https://example.org" />
+              {create.value?.fieldErrors?.link && (
+                <p class="mt-2 text-sm text-red-500">
+                  {create.value.fieldErrors.link}
+                </p>
+              )}
             </fieldset>
             <fieldset class="space-y-2 md:col-span-2">
               <label for="description">Description (optional)</label>
               <textarea rows={3} name="description" id="description" placeholder="Enter something about your organisation" />
+              {create.value?.fieldErrors?.description&& (
+                <p class="mt-2 text-sm text-red-500">
+                  {create.value.fieldErrors.description}
+                </p>
+              )}
             </fieldset>
 
             <div class="flex flex-col md:flex-row md:col-span-2 items-center gap-2">
