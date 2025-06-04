@@ -1,5 +1,5 @@
 import { component$, useSignal, useStylesScoped$ } from "@builder.io/qwik";
-import { Form, Link, routeAction$, zod$, z } from "@builder.io/qwik-city";
+import { Form, Link, routeAction$, zod$, z, routeLoader$ } from "@builder.io/qwik-city";
 import { createSupabaseServerClient } from "~/lib/supabase";
 import styles from "./index.css?inline";
 import { User } from "@supabase/supabase-js";
@@ -59,10 +59,21 @@ export const useCreateOrg = routeAction$(async ({name, description, link}, req) 
   link: z.string().url().trim().max(255).optional()
 }))
 
+export const useCodeFromQueryString = routeLoader$((req) => {
+  const data = z.string()
+      .length(9)
+      .trim()
+      .toUpperCase()
+      .regex(/[A-Z0-9]+/g)
+      .safeParse(req.url.searchParams.get('code'))
+  return (data.success) ? data.data : undefined
+})
+
 export default component$(() => {
   useStylesScoped$(styles);
   
   // true -> join | false -> create
+  const code = useCodeFromQueryString()
   const mode = useSignal(true);
   const join = useJoinOrg();
   const create = useCreateOrg()
@@ -142,7 +153,7 @@ export default component$(() => {
                   id="code"
                   type="text"
                   name="code"
-                  value={join.formData?.get("code")}
+                  value={join.formData?.get("code") || code.value}
                   aria-label="Invite Code"
                   placeholder="Enter your invite code"
                   maxLength={9}
