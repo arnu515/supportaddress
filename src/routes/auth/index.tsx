@@ -216,12 +216,6 @@ export default component$(() => {
                     console.log(loc.url.origin);
                     supabase.auth.signInWithOAuth({
                       provider: "github",
-                      options: {
-                        redirectTo: new URL(
-                          "/auth/callback",
-                          loc.url.origin,
-                        ).toString(),
-                      },
                     });
                   }}
                   class="flex w-full cursor-pointer items-center justify-center gap-4 rounded-lg border border-gray-600 bg-gray-800 px-4 py-2 text-white hover:bg-gray-700"
@@ -245,12 +239,6 @@ export default component$(() => {
                     );
                     supabase.auth.signInWithOAuth({
                       provider: "discord",
-                      options: {
-                        redirectTo: new URL(
-                          "/auth/callback",
-                          loc.url.origin,
-                        ).toString(),
-                      },
                     });
                   }}
                   class="flex w-full cursor-pointer items-center justify-center gap-4 rounded-lg bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700"
