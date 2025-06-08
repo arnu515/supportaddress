@@ -9,6 +9,80 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      messages: {
+        Row: {
+          created_at: string
+          from_email: string
+          from_name: string | null
+          id: number
+          in_reply_to: number | null
+          message_id: string
+          org_id: string
+          reply_to: string
+          subgroup_id: string | null
+          text: string
+          ticket_id: number
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          from_email: string
+          from_name?: string | null
+          id?: number
+          in_reply_to?: number | null
+          message_id: string
+          org_id: string
+          reply_to: string
+          subgroup_id?: string | null
+          text: string
+          ticket_id: number
+          title: string
+        }
+        Update: {
+          created_at?: string
+          from_email?: string
+          from_name?: string | null
+          id?: number
+          in_reply_to?: number | null
+          message_id?: string
+          org_id?: string
+          reply_to?: string
+          subgroup_id?: string | null
+          text?: string
+          ticket_id?: number
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_in_reply_to_fkey"
+            columns: ["in_reply_to"]
+            isOneToOne: false
+            referencedRelation: "messages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organisations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_subgroup_id_fkey"
+            columns: ["subgroup_id"]
+            isOneToOne: false
+            referencedRelation: "subgroups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       org_invites: {
         Row: {
           created_at: string
@@ -158,6 +232,57 @@ export type Database = {
           },
         ]
       }
+      tickets: {
+        Row: {
+          closed_at: string | null
+          created_at: string
+          from: string
+          from_name: string | null
+          id: number
+          message_id: string
+          org_id: string
+          subgroup_id: string | null
+          title: string
+        }
+        Insert: {
+          closed_at?: string | null
+          created_at?: string
+          from: string
+          from_name?: string | null
+          id?: number
+          message_id: string
+          org_id: string
+          subgroup_id?: string | null
+          title: string
+        }
+        Update: {
+          closed_at?: string | null
+          created_at?: string
+          from?: string
+          from_name?: string | null
+          id?: number
+          message_id?: string
+          org_id?: string
+          subgroup_id?: string | null
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tickets_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organisations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tickets_subgroup_id_fkey"
+            columns: ["subgroup_id"]
+            isOneToOne: false
+            referencedRelation: "subgroups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       users: {
         Row: {
           avatar_url: string | null
@@ -190,7 +315,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      ticket_status: "pending" | "closed" | "resolved"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -305,6 +430,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      ticket_status: ["pending", "closed", "resolved"],
+    },
   },
 } as const
