@@ -219,7 +219,7 @@ export default component$(() => {
                 style={{ display: orgDropdownOpen.value ? "block" : "none" }}
               >
                 {orgs.value.map((org) => (
-                  <li>
+                  <li key={org.id}>
                     <Link
                       href={`/app/${org.id}`}
                       class={
@@ -260,7 +260,7 @@ export default component$(() => {
                 </h3>
                 <ul class="subgroup-list overflow-auto">
                   {subgroups.value.map((sg) => (
-                    <li>
+                    <li key={sg.id}>
                       <Link
                         href={`/app/${sg.org_id}/${sg.id}`}
                         class={
