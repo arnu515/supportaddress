@@ -102,7 +102,7 @@ export default component$(({ orgId }: { orgId: string }) => {
             class="max-w-screen-sm bg-gray-300 px-6 py-4 text-black dark:bg-gray-700 dark:text-white"
             action={invite}
             onSubmitCompleted$={(e) => {
-              if (!e.detail.value?.failed) {
+              if (e.detail.value && !e.detail.value.failed) {
                 showInviteForm.value = false;
                 alert("Invited user successfully");
               }
