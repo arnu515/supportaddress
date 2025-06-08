@@ -14,5 +14,5 @@ export const onGet: RequestHandler = async (req) => {
     const error_description = req.url.searchParams.get("error_description");
     throw req.error(400, `${error_code}: ${error_description}`);
   }
-  throw req.redirect(303, "/auth");
+  throw req.redirect(303, "/");
 };
