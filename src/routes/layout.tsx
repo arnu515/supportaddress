@@ -29,37 +29,44 @@ export const onRequest: RequestHandler = async (req) => {
 };
 
 const NavigationProgress = component$(() => {
-  const width = useSignal(0)
-  const opacity = useSignal(1)
-  const loc = useLocation()
+  const width = useSignal(0);
+  const opacity = useSignal(1);
+  const loc = useLocation();
 
-  useVisibleTask$(({track}) => {
+  useVisibleTask$(({ track }) => {
     if (track(() => loc.isNavigating)) {
       width.value = 20;
     } else {
       if (width.value !== 0) {
-        width.value = 100
+        width.value = 100;
         setTimeout(() => {
-          opacity.value = 0
+          opacity.value = 0;
           setTimeout(() => {
-            width.value = 0
+            width.value = 0;
             setTimeout(() => {
-              opacity.value = 1
-            }, 200)
-          }, 200)
-        }, 100)
+              opacity.value = 1;
+            }, 200);
+          }, 200);
+        }, 100);
       }
     }
-  })
+  });
 
-  return <div class="fixed top-0 w-full h-1 z-50">
-    <div class="w-full h-full bg-purple-500 transition-all duration-200 ease-in-out" style={{ width: width.value + '%', opacity: opacity.value }} />
-  </div>
-})
+  return (
+    <div class="fixed top-0 z-50 h-1 w-full">
+      <div
+        class="h-full w-full bg-purple-500 transition-all duration-200 ease-in-out"
+        style={{ width: width.value + "%", opacity: opacity.value }}
+      />
+    </div>
+  );
+});
 
 export default component$(() => {
-  return <>
-    <NavigationProgress />
-    <Slot />
-  </>;
+  return (
+    <>
+      <NavigationProgress />
+      <Slot />
+    </>
+  );
 });
