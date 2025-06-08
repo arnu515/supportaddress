@@ -212,6 +212,7 @@ Deno.serve(async (req) => {
     let ticketId: string | undefined = undefined;
     let subgroupId: string | undefined = undefined;
     let replyId: string | undefined = undefined;
+    let ticketPromise: PromiseLike<unknown> | undefined = undefined;
     if (!replyMsgId) {
       if (await checkSubgroup(data.MailboxHash, orgId)) {
         subgroupId = data.MailboxHash;
@@ -232,7 +233,7 @@ Deno.serve(async (req) => {
     } else {
       console.log(replyMsgId, orgId);
       const { data: msg, error } = await supabase.from("messages").select(
-        "id, ticket_id, subgroup_id",
+        "id, ticket_id, subgroup_id, tickets(closed_at)",
       )
         .eq("message_id", replyMsgId).eq("org_id", orgId).single();
       if (error) {
@@ -242,6 +243,11 @@ Deno.serve(async (req) => {
       ticketId = msg.ticket_id as string;
       subgroupId = msg.subgroup_id as string;
       replyId = msg.id;
+
+      ticketPromise = supabase.from("tickets").update({ closed_at: null }).eq(
+        "id",
+        ticketId,
+      ).then(() => {});
     }
 
     const { error } = await supabase.from("messages").insert({
@@ -262,6 +268,7 @@ Deno.serve(async (req) => {
     }
 
     // TODO: Attachment support
+    if (ticketPromise) await ticketPromise;
 
     return new Response(
       null,

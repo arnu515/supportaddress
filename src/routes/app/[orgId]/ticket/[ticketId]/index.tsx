@@ -453,7 +453,9 @@ const ToggleAssignButton = component$(({ assigned }: { assigned: boolean }) => {
     if (count !== 1) return "Not in this org";
     const { data: ticket, error: ticketErr } = await supabase
       .from("tickets")
-      .select("id, assigned_to, organisations(owner_id), subgroup_id")
+      .select(
+        "id, assigned_to, organisations(owner_id), subgroup_id, closed_at",
+      )
       .eq("id", Number(this.params.ticketId))
       .eq("org_id", this.params.orgId)
       .single();
@@ -468,6 +470,7 @@ const ToggleAssignButton = component$(({ assigned }: { assigned: boolean }) => {
       if (count !== 1 && ticket.organisations.owner_id !== user.id)
         return "Not in subgroup";
     }
+    if (ticket.closed_at) return "This ticket is closed.";
     if (
       ticket.assigned_to &&
       (ticket.assigned_to === user.id ||
@@ -501,10 +504,144 @@ const ToggleAssignButton = component$(({ assigned }: { assigned: boolean }) => {
           loading.value = false;
         }
       }}
-      class="flex w-full cursor-pointer items-center gap-2 rounded-md border border-gray-500 bg-gray-300 px-4 py-2 disabled:brightness-75 dark:bg-gray-700"
+      class="flex w-full cursor-pointer items-center gap-2 rounded-md border border-gray-500 bg-gray-300 px-4 py-2 disabled:cursor-not-allowed disabled:brightness-75 dark:bg-gray-700"
       disabled={loading.value}
     >
       {assigned ? "Unassign" : "Assign Yourself"}
+    </button>
+  );
+});
+
+const CloseTicketButton = component$(() => {
+  const toggleAssign = server$(async function () {
+    const supabaseUser = createSupabaseServerClient(this);
+    const {
+      data: { user },
+      error,
+    } = await supabaseUser.auth.getUser();
+    if (error) return error.message;
+    if (!user) return "Unauthorized";
+    const supabase = createServiceRoleClient(this.env);
+    const { count, error: countErr } = await supabase
+      .from("organisations_users")
+      .select("id", { count: "exact", head: true })
+      .eq("org_id", this.params.orgId)
+      .eq("user_id", user.id);
+    if (countErr) return countErr.message;
+    if (count !== 1) return "Not in this org";
+    const { data: ticket, error: ticketErr } = await supabase
+      .from("tickets")
+      .select(
+        "id, assigned_to, organisations(owner_id), subgroup_id, from_name, from, closed_at",
+      )
+      .eq("id", Number(this.params.ticketId))
+      .eq("org_id", this.params.orgId)
+      .single();
+    if (ticketErr) return ticketErr.message;
+    if (ticket.subgroup_id) {
+      const { count, error: countErr } = await supabase
+        .from("subgroups_users")
+        .select("id", { count: "exact", head: true })
+        .eq("subgroup_id", ticket.subgroup_id)
+        .eq("user_id", user.id);
+      if (countErr) return countErr.message;
+      if (count !== 1 && ticket.organisations.owner_id !== user.id)
+        return "Not in subgroup";
+    }
+    if (ticket.closed_at) return "This ticket is closed.";
+    if (
+      ticket.assigned_to &&
+      ticket.assigned_to !== user.id &&
+      ticket.organisations.owner_id !== user.id
+    )
+      return "This ticket is assigned to someone else, you cannot close it.";
+
+    const { data: profile, error: profileErr } = await supabase
+      .from("users")
+      .select("*")
+      .eq("id", user.id)
+      .single();
+    if (profileErr) return profileErr.message;
+
+    await supabase
+      .from("tickets")
+      .update({ closed_at: new Date().toISOString() })
+      .eq("id", ticket.id);
+
+    const { data: replyMessage, error: msgErr } = await supabase
+      .from("messages")
+      .select("id, message_id")
+      .eq("ticket_id", ticket.id)
+      .eq("from_email", ticket.from)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (msgErr) return msgErr.message;
+
+    const Headers = [];
+    if (replyMessage) {
+      Headers.push({ Name: "In-Reply-To", Value: replyMessage.message_id });
+      Headers.push({ Name: "References", Value: replyMessage.message_id });
+    }
+
+    const res = await fetch("https://api.postmarkapp.com/email", {
+      method: "POST",
+      headers: {
+        accept: "application/json",
+        "Content-Type": "application/json",
+        "X-Postmark-Server-Token": this.env.get("POSTMARK_SERVER_TOKEN")!,
+      },
+      body: JSON.stringify({
+        From: `${profile.name} <${this.params.orgId}${ticket.subgroup_id ? "+" + ticket.subgroup_id : ""}@aarnavpai.in>`,
+        To: ticket.from_name
+          ? `"${ticket.from_name}" <${ticket.from}>`
+          : ticket.from,
+        Subject: "Ticket has been closed",
+        Headers,
+        HtmlBody:
+          "<p>This ticket has been <b>closed</b>. You will no longer receive updates to this ticket, and replying to this message will re-open the ticket.</p>",
+        TextBody:
+          "This ticket has been *closed*. You will no longer receive updates to this ticket, and replying to this message will re-open the ticket.",
+        ReplyTo: `${this.params.orgId}${ticket.subgroup_id ? "+" + ticket.subgroup_id : ""}@support.aarnavpai.in`,
+      }),
+    });
+    if (!res.ok) console.log(await res.text());
+    const { MessageID } = await res.json();
+    const { error: insError } = await supabase.from("messages").insert({
+      from_email: user.email,
+      message_id: MessageID + "@mtasv.net",
+      org_id: this.params.orgId,
+      reply_to: user.email,
+      text: `<p>
+          This ticket has been <b>closed</b>. You will no longer receive updates
+          to this ticket, and replying to this message will re-open the ticket.
+        </p>`,
+      ticket_id: ticket.id,
+      title: "Ticket has been closed",
+      from_name: profile.name,
+      in_reply_to: replyMessage?.id || null,
+      subgroup_id: ticket.subgroup_id || null,
+    });
+  });
+
+  const loading = useSignal(false);
+
+  return (
+    <button
+      onClick$={async () => {
+        loading.value = true;
+        try {
+          const v = await toggleAssign();
+          if (v) alert("Error: " + v);
+          else window.location.reload();
+        } finally {
+          loading.value = false;
+        }
+      }}
+      class="flex w-full cursor-pointer items-center gap-2 rounded-md border border-red-500 bg-red-100 bg-red-900/30 px-4 py-2 text-red-500 disabled:cursor-not-allowed disabled:brightness-75 dark:bg-gray-700"
+      disabled={loading.value}
+    >
+      Close Ticket
     </button>
   );
 });
@@ -566,22 +703,22 @@ export default component$(() => {
             )}
           </div>
         </div>
-        <div class="my-4 flex max-w-sm flex-col justify-center gap-4 rounded-md border border-gray-200 bg-gray-50 px-4 py-2 text-black shadow-sm backdrop-blur-sm dark:border-gray-700 dark:bg-gray-800/50 dark:text-white">
-          <h3 class="text-lg font-bold">Actions</h3>
-          {!ticket.value.assigned_to && <ToggleAssignButton assigned={false} />}
-          {ticket.value.assigned_to &&
-            (ticket.value.assigned_to === user.value.id ||
-              org.value?.owner_id === user.value.id) && (
-              <ToggleAssignButton assigned />
+        {!ticket.value.closed_at && (
+          <div class="my-4 flex max-w-sm flex-col justify-center gap-4 rounded-md border border-gray-200 bg-gray-50 px-4 py-2 text-black shadow-sm backdrop-blur-sm dark:border-gray-700 dark:bg-gray-800/50 dark:text-white">
+            <h3 class="text-lg font-bold">Actions</h3>
+            {!ticket.value.assigned_to && (
+              <ToggleAssignButton assigned={false} />
             )}
-          {(!ticket.value.assigned_to ||
-            ticket.value.assigned_to === user.value.id ||
-            org.value?.owner_id === user.value.id) && (
-            <button class="flex w-full cursor-pointer items-center gap-2 rounded-md border border-red-500 bg-red-100 bg-red-900/30 px-4 py-2 text-red-500 dark:bg-gray-700">
-              Close ticket
-            </button>
-          )}
-        </div>
+            {ticket.value.assigned_to &&
+              (ticket.value.assigned_to === user.value.id ||
+                org.value?.owner_id === user.value.id) && (
+                <ToggleAssignButton assigned />
+              )}
+            {(!ticket.value.assigned_to ||
+              ticket.value.assigned_to === user.value.id ||
+              org.value?.owner_id === user.value.id) && <CloseTicketButton />}
+          </div>
+        )}
       </aside>
     </div>
   );
