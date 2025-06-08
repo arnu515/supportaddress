@@ -16,6 +16,7 @@ export default component$(() => {
       <p class="my-4 ml-4 text-lg font-medium text-gray-700 md:text-xl lg:text-2xl dark:text-gray-300">
         Welcome to <em>{org.value!.name}</em>
       </p>
+      {org.value?.description && <p class="ml-4 my-4 text-gray-500"><em>{org.value.description}</em></p>}
 
       {org.value?.owner_id === user.value.id && (
         <OwnerActions orgId={org.value.id} />
