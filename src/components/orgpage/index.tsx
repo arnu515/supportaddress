@@ -10,7 +10,7 @@ export const Email = component$(
     subgroupId?: string;
     subgroupHasDescription?: boolean;
   }) => {
-    const email = `${orgId}${subgroupId ? "+" + subgroupId : ""}@support.aarnavpai.in`;
+    const email = `${orgId}${subgroupId ? "+" + subgroupId : ""}@supportaddress.aarnavpai.in`;
     const copyEmail$ = $(() => {
       if (
         "clipboard" in navigator &&
@@ -47,7 +47,7 @@ export const Email = component$(
           <p class="text-center text-gray-500">
             Alternatively, use{" "}
             <code class="border border-gray-500 bg-white p-1 font-mono dark:bg-gray-900">
-              {orgId}@support.aarnavpai.in
+              {orgId}@supportaddress.aarnavpai.in
             </code>{" "}
             for an organisation-wide email.{" "}
             {subgroupHasDescription &&

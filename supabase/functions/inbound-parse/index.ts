@@ -136,7 +136,7 @@ Deno.serve(async (req) => {
             v.string(),
             v.email(),
             v.trim(),
-            v.endsWith("support.aarnavpai.in"),
+            v.endsWith("supportaddress.aarnavpai.in"),
           ),
         })),
         v.nonEmpty(),

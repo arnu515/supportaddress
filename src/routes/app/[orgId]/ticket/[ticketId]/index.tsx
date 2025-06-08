@@ -224,7 +224,7 @@ export const onPost: RequestHandler = async (req) => {
       Headers,
       HtmlBody: content,
       TextBody: sanitize(content, { allowedAttributes: {}, allowedTags: [] }),
-      ReplyTo: `${ticket.org_id}${ticket.subgroup_id ? "+" + ticket.subgroup_id : ""}@support.aarnavpai.in`,
+      ReplyTo: `${ticket.org_id}${ticket.subgroup_id ? "+" + ticket.subgroup_id : ""}@supportaddress.aarnavpai.in`,
       // TODO: attachments
     }),
   });
@@ -597,7 +597,7 @@ const CloseTicketButton = component$(() => {
           "<p>This ticket has been <b>closed</b>. You will no longer receive updates to this ticket, and replying to this message will re-open the ticket.</p>",
         TextBody:
           "This ticket has been *closed*. You will no longer receive updates to this ticket, and replying to this message will re-open the ticket.",
-        ReplyTo: `${this.params.orgId}${ticket.subgroup_id ? "+" + ticket.subgroup_id : ""}@support.aarnavpai.in`,
+        ReplyTo: `${this.params.orgId}${ticket.subgroup_id ? "+" + ticket.subgroup_id : ""}@supportaddress.aarnavpai.in`,
       }),
     });
     if (!res.ok) console.log(await res.text());
