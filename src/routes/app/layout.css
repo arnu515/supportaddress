@@ -31,7 +31,7 @@ ul.subgroup-list li :global(a) {
   @apply block w-full rounded-md border border-transparent bg-white px-3 py-2 hover:border-gray-500 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-800;
 }
 
-ul.subgroup-list li :global(a).active {
+ul.subgroup-list li :global(a.active) {
   @apply border-purple-500/50 bg-purple-100 text-purple-500 hover:bg-purple-200 dark:bg-purple-900/50 dark:hover:bg-purple-800/50;
 }
 
