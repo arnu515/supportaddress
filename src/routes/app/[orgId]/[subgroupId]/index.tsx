@@ -1,6 +1,9 @@
 import { component$ } from "@builder.io/qwik";
 import { useCurrentOrg, useRequiredUser } from "../../layout";
 import { useSubgroup } from "./layout";
+import OwnerActions from "./OwnerActions";
+
+export { useAddUser } from "./OwnerActions"
 
 export default component$(() => {
   const org = useCurrentOrg();
@@ -16,6 +19,10 @@ export default component$(() => {
         Welcome to <em>{subgroup.value!.name}</em> in <em>{org.value!.name}</em>
       </p>
       {subgroup.value?.description && <p class="ml-4 my-4 text-gray-500"><em>{subgroup.value.description}</em></p>}
+
+      {org.value?.owner_id === user.value.id && (
+        <OwnerActions />
+      )}
     </div>
   );
 });
