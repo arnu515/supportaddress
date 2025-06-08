@@ -235,6 +235,24 @@ export default component$(() => {
               </ul>
             </div>
 
+            {org.value && <ul class="subgroup-list overflow-auto">
+              <li>
+                <Link
+                  href={`/app/${org.value.id}`}
+                  class={
+                    loc.url.pathname === 
+                      `/app/${org.value.id}` ||
+                    loc.url.pathname === 
+                      `/app/${org.value.id}/`
+                      ? "active"
+                      : undefined
+                  }
+                >
+                  Organisation Home
+                </Link>
+              </li>
+            </ul>}
+
             {subgroups.value && (
               <>
                 <h3 class="black:text-gray-600 mx-4 text-sm font-bold text-gray-400 uppercase">
