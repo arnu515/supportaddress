@@ -213,6 +213,7 @@ export default component$(() => {
                       import.meta.env.PUBLIC_SUPABASE_URL,
                       import.meta.env.PUBLIC_SUPABASE_ANON_KEY,
                     );
+                    console.log(loc.url.origin)
                     supabase.auth.signInWithOAuth({
                       provider: "github",
                       options: {
