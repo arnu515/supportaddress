@@ -11,6 +11,7 @@ export type Database = {
     Tables: {
       messages: {
         Row: {
+          attachments: string[]
           created_at: string
           from_email: string
           from_name: string | null
@@ -25,6 +26,7 @@ export type Database = {
           title: string
         }
         Insert: {
+          attachments?: string[]
           created_at?: string
           from_email: string
           from_name?: string | null
@@ -39,6 +41,7 @@ export type Database = {
           title: string
         }
         Update: {
+          attachments?: string[]
           created_at?: string
           from_email?: string
           from_name?: string | null
