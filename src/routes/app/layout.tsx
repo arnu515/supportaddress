@@ -235,23 +235,23 @@ export default component$(() => {
               </ul>
             </div>
 
-            {org.value && <ul class="subgroup-list overflow-auto">
-              <li>
-                <Link
-                  href={`/app/${org.value.id}`}
-                  class={
-                    loc.url.pathname === 
-                      `/app/${org.value.id}` ||
-                    loc.url.pathname === 
-                      `/app/${org.value.id}/`
-                      ? "active"
-                      : undefined
-                  }
-                >
-                  Organisation Home
-                </Link>
-              </li>
-            </ul>}
+            {org.value && (
+              <ul class="subgroup-list overflow-auto">
+                <li>
+                  <Link
+                    href={`/app/${org.value.id}`}
+                    class={
+                      loc.url.pathname === `/app/${org.value.id}` ||
+                      loc.url.pathname === `/app/${org.value.id}/`
+                        ? "active"
+                        : undefined
+                    }
+                  >
+                    Organisation Home
+                  </Link>
+                </li>
+              </ul>
+            )}
 
             {subgroups.value && (
               <>
@@ -283,7 +283,7 @@ export default component$(() => {
               <li>
                 <Link
                   href="/app/messages"
-                  class={`${loc.url.pathname.startsWith("/app/messages") ? "active " : ""}!flex items-center gap-2`}
+                  class={`${loc.url.pathname.startsWith("/app/messages") ? "active" : ""}!flex items-center gap-2`}
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -308,7 +308,7 @@ export default component$(() => {
               <li>
                 <Link
                   href="/app/settings"
-                  class={`${loc.url.pathname.startsWith("/app/settings") ? "active " : ""}!flex items-center gap-2`}
+                  class={`${loc.url.pathname.startsWith("/app/settings") ? "active" : ""}!flex items-center gap-2`}
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"

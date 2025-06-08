@@ -1,7 +1,10 @@
 import { component$, useSignal, useStylesScoped$ } from "@builder.io/qwik";
 import { Form, routeAction$, zod$, z } from "@builder.io/qwik-city";
 import styles from "../../new-org/index.css?inline";
-import { createServiceRoleClient, createSupabaseServerClient } from "~/lib/supabase";
+import {
+  createServiceRoleClient,
+  createSupabaseServerClient,
+} from "~/lib/supabase";
 
 export const useAddUser = routeAction$(
   async ({ email }, req) => {
@@ -16,16 +19,26 @@ export const useAddUser = routeAction$(
       .eq("email", email)
       .maybeSingle();
     if (error) return req.fail(500, { message: error.message });
-    if (!addee) return req.fail(400, { message: "This user is not in this organisation. Invite them first." });
-    const { count, error: countErr } = await supabase.from("organisations_users").select("id", { count: 'exact', head: true }).eq("org_id", req.params.orgId).eq("user_id", addee.id)
+    if (!addee)
+      return req.fail(400, {
+        message: "This user is not in this organisation. Invite them first.",
+      });
+    const { count, error: countErr } = await supabase
+      .from("organisations_users")
+      .select("id", { count: "exact", head: true })
+      .eq("org_id", req.params.orgId)
+      .eq("user_id", addee.id);
     if (countErr) return req.fail(500, { message: countErr.message });
-    if (count !== 1) return req.fail(400, { message: "This user is not in this organisation. Invite them first." });
+    if (count !== 1)
+      return req.fail(400, {
+        message: "This user is not in this organisation. Invite them first.",
+      });
     const { error: sError } = await supabase.from("subgroups_users").insert({
       subgroup_id: req.params.subgroupId,
-      user_id: addee.id
+      user_id: addee.id,
     });
     if (sError) return req.fail(500, { message: sError.message });
-    return { name: addee.name }
+    return { name: addee.name };
   },
   zod$({
     email: z
@@ -78,7 +91,7 @@ export default component$(() => {
             class="max-w-screen-sm bg-gray-300 px-6 py-4 text-black dark:bg-gray-700 dark:text-white"
             action={addUser}
             onSubmitCompleted$={(e) => {
-              console.log(e.detail)
+              console.log(e.detail);
               if (e.detail.value && !e.detail.value.failed) {
                 showAddForm.value = false;
                 alert(`Added ${e.detail.value?.name || "user"} successfully`);
@@ -92,7 +105,10 @@ export default component$(() => {
               </div>
             )}
             <h3 class="my-4 text-xl font-bold">Add a user</h3>
-            <p class="my-4 text-lg">Enter the user's email to add them to this subgroup. The user must already be in your organisation.</p>
+            <p class="my-4 text-lg">
+              Enter the user's email to add them to this subgroup. The user must
+              already be in your organisation.
+            </p>
             <div class="space-y-2">
               <label for="email">Email</label>
               <input

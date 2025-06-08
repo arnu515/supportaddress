@@ -11,7 +11,7 @@ export const useSubgroup = routeLoader$(async (req) => {
     .eq("id", subgroupId)
     .maybeSingle();
   if (error) throw req.error(500, error.message);
-  if (!data) throw req.error(404, "Page not found")
+  if (!data) throw req.error(404, "Page not found");
   return data;
 });
 
