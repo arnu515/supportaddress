@@ -278,7 +278,10 @@ Deno.serve(async (req) => {
               attachment.Name?.split(".").at(-1) || ""
             }`,
             decodeBase64(attachment.Content),
-            { contentType: attachment.ContentType },
+            {
+              contentType: attachment.ContentType,
+              metadata: { origName: attachment.Name },
+            },
           );
         if (error) {
           console.error("Could not add attachment:", error);
