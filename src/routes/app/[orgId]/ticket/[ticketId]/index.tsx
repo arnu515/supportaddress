@@ -4,12 +4,7 @@ import {
   noSerialize,
   useSignal,
 } from "@builder.io/qwik";
-import {
-  RequestHandler,
-  routeAction$,
-  routeLoader$,
-  server$,
-} from "@builder.io/qwik-city";
+import { RequestHandler, routeLoader$, server$ } from "@builder.io/qwik-city";
 import { Database } from "~/lib/dbTypes";
 import {
   createServiceRoleClient,
@@ -166,7 +161,7 @@ export const onPost: RequestHandler = async (req) => {
     return;
   }
   title = title.trim();
-  let replyT = fd.get("replyTo");
+  const replyT = fd.get("replyTo");
   if (
     typeof replyT !== "string" ||
     (replyT.trim() && isNaN(Number(replyT.trim())))
@@ -174,7 +169,7 @@ export const onPost: RequestHandler = async (req) => {
     req.json(400, { message: "Invalid message, please refresh the page." });
     return;
   }
-  let replyTo = replyT.trim() ? Number(replyT.trim()) : undefined;
+  const replyTo = replyT.trim() ? Number(replyT.trim()) : undefined;
 
   const supabase = createSupabaseServerClient(req);
   const { data: ticket, error } = await supabase
@@ -608,10 +603,10 @@ const CloseTicketButton = component$(() => {
     if (!res.ok) console.log(await res.text());
     const { MessageID } = await res.json();
     const { error: insError } = await supabase.from("messages").insert({
-      from_email: user.email,
+      from_email: user.email!,
       message_id: MessageID + "@mtasv.net",
       org_id: this.params.orgId,
-      reply_to: user.email,
+      reply_to: user.email!,
       text: `<p>
           This ticket has been <b>closed</b>. You will no longer receive updates
           to this ticket, and replying to this message will re-open the ticket.
@@ -622,6 +617,7 @@ const CloseTicketButton = component$(() => {
       in_reply_to: replyMessage?.id || null,
       subgroup_id: ticket.subgroup_id || null,
     });
+    if (insError) return insError.message;
   });
 
   const loading = useSignal(false);

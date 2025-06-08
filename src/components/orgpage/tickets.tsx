@@ -34,7 +34,10 @@ export const TicketList = component$(
         <div class="flex flex-col justify-center gap-4">
           {tickets.length > 0 ? (
             tickets.map((ticket) => (
-              <Link href={`/app/${ticket.org_id}/ticket/${ticket.id}`}>
+              <Link
+                href={`/app/${ticket.org_id}/ticket/${ticket.id}`}
+                key={ticket.id}
+              >
                 <article
                   class="justify-between gap-2 rounded-md border border-gray-200 bg-gray-50 px-4 py-2 text-black shadow-sm backdrop-blur-sm dark:border-gray-700 dark:bg-gray-800/50 dark:text-white"
                   key={ticket.id}
