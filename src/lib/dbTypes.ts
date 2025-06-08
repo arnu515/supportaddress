@@ -234,6 +234,7 @@ export type Database = {
       }
       tickets: {
         Row: {
+          assigned_to: string | null
           closed_at: string | null
           created_at: string
           from: string
@@ -245,6 +246,7 @@ export type Database = {
           title: string
         }
         Insert: {
+          assigned_to?: string | null
           closed_at?: string | null
           created_at?: string
           from: string
@@ -256,6 +258,7 @@ export type Database = {
           title: string
         }
         Update: {
+          assigned_to?: string | null
           closed_at?: string | null
           created_at?: string
           from?: string
@@ -267,6 +270,13 @@ export type Database = {
           title?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "tickets_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "tickets_org_id_fkey"
             columns: ["org_id"]
