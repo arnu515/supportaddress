@@ -55,14 +55,19 @@ export const TicketList = component$(
                         Closed
                       </span>
                     )}
-                    {ticket.assigned_to &&
-                    ticket.assigned_to === user.value?.id ? (
-                      <span class="rounded-full border border-amber-500 bg-amber-100 px-2 py-1 text-sm text-amber-500 dark:bg-amber-900/30">
-                        Assigned to You
-                      </span>
+                    {ticket.assigned_to ? (
+                      ticket.assigned_to === user.value?.id ? (
+                        <span class="rounded-full border border-purple-500 bg-purple-100 px-2 py-1 text-sm text-purple-500 dark:bg-purple-900/30">
+                          Assigned to You
+                        </span>
+                      ) : (
+                        <span class="rounded-full border border-green-500 bg-green-100 px-2 py-1 text-sm text-green-500 dark:bg-green-900/30">
+                          Assigned
+                        </span>
+                      )
                     ) : (
-                      <span class="rounded-full border border-green-500 bg-green-100 px-2 py-1 text-sm text-green-500 dark:bg-green-900/30">
-                        Assigned
+                      <span class="rounded-full border border-amber-500 bg-amber-100 px-2 py-1 text-sm text-amber-500 dark:bg-amber-900/30">
+                        Not Assigned
                       </span>
                     )}
                   </div>
