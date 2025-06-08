@@ -74,6 +74,7 @@ export const Status = ({
         width="24"
         height="24"
         viewBox="0 0 24 24"
+        key={1}
         fill="none"
         stroke="currentColor"
         stroke-width="2"
@@ -102,6 +103,7 @@ export const Status = ({
         height="24"
         viewBox="0 0 24 24"
         fill="none"
+        key={2}
         stroke="currentColor"
         stroke-width="2"
         stroke-linecap="round"
@@ -118,6 +120,7 @@ export const Status = ({
       "text-amber-500 bg-amber-100 dark:bg-amber-900/30",
       <svg
         xmlns="http://www.w3.org/2000/svg"
+        key={3}
         width="24"
         height="24"
         viewBox="0 0 24 24"
@@ -140,6 +143,7 @@ export const Status = ({
       "text-red-500 bg-red-100 dark:bg-red-900/30",
       <svg
         xmlns="http://www.w3.org/2000/svg"
+        key={4}
         width="24"
         height="24"
         viewBox="0 0 24 24"

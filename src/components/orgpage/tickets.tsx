@@ -3,6 +3,7 @@ import { Link, routeLoader$ } from "@builder.io/qwik-city";
 import { createSupabaseServerClient } from "~/lib/supabase";
 import { useUser } from "~/lib/user";
 
+// eslint-disable-next-line qwik/loader-location
 export const useTickets = routeLoader$(async (req) => {
   const supabase = createSupabaseServerClient(req);
   const subgroupId = req.params.subgroupId;
@@ -35,7 +36,10 @@ export const TicketList = component$(
           {tickets.length > 0 ? (
             tickets.map((ticket) => (
               <Link href={`/app/${ticket.org_id}/ticket/${ticket.id}`}>
-                <article class="justify-between gap-2 rounded-md border border-gray-200 bg-gray-50 px-4 py-2 text-black shadow-sm backdrop-blur-sm dark:border-gray-700 dark:bg-gray-800/50 dark:text-white">
+                <article
+                  class="justify-between gap-2 rounded-md border border-gray-200 bg-gray-50 px-4 py-2 text-black shadow-sm backdrop-blur-sm dark:border-gray-700 dark:bg-gray-800/50 dark:text-white"
+                  key={ticket.id}
+                >
                   <h3 class="my-2 text-xl font-medium">{ticket.title}</h3>
                   <p class="my-1 text-sm text-gray-500">
                     By: {ticket.from_name || ticket.from} | At:{" "}

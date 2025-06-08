@@ -25,9 +25,13 @@ export const useStatus = routeLoader$(async (req) => {
     closed = 0;
 
   for (const ticket of data) {
-    if (ticket.assigned_to && ticket.closed_at) completed++, closed++;
-    else if (ticket.assigned_to && !ticket.closed_at) assigned++, open++;
-    else if (!ticket.assigned_to && ticket.closed_at) closed++;
+    if (ticket.assigned_to && ticket.closed_at) {
+      completed++;
+      closed++;
+    } else if (ticket.assigned_to && !ticket.closed_at) {
+      assigned++;
+      open++;
+    } else if (!ticket.assigned_to && ticket.closed_at) closed++;
     else if (!ticket.assigned_to && !ticket.closed_at) open++;
   }
 

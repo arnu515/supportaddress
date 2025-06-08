@@ -4,6 +4,7 @@ import styles from "../new-org/index.css?inline";
 import { createSupabaseServerClient } from "~/lib/supabase";
 import { customAlphabet } from "nanoid";
 
+// eslint-disable-next-line qwik/loader-location
 export const useInvite = routeAction$(
   async ({ email, message }, req) => {
     const user = req.sharedMap.get("user");

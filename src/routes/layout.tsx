@@ -2,7 +2,7 @@ import { component$, Slot } from "@builder.io/qwik";
 import type { RequestHandler } from "@builder.io/qwik-city";
 import { createSupabaseServerClient } from "~/lib/supabase";
 
-export { useUser, type User } from "~/lib/user";
+export { useUser } from "~/lib/user";
 
 export const onRequest: RequestHandler = async (req) => {
   const supabase = createSupabaseServerClient(req);
@@ -20,7 +20,7 @@ export const onRequest: RequestHandler = async (req) => {
         .maybeSingle();
       if (error) throw req.error(500, error.message);
       if (profile) {
-        req.sharedMap.set("user", { ...data.user, profile } satisfies User);
+        req.sharedMap.set("user", { ...data.user, profile });
         return;
       }
     }

@@ -1,11 +1,9 @@
 import { component$, useSignal, useStylesScoped$ } from "@builder.io/qwik";
 import { Form, routeAction$, zod$, z } from "@builder.io/qwik-city";
 import styles from "../../new-org/index.css?inline";
-import {
-  createServiceRoleClient,
-  createSupabaseServerClient,
-} from "~/lib/supabase";
+import { createServiceRoleClient } from "~/lib/supabase";
 
+// eslint-disable-next-line qwik/loader-location
 export const useAddUser = routeAction$(
   async ({ email }, req) => {
     const user = req.sharedMap.get("user");
