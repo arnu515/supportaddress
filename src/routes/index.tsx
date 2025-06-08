@@ -151,7 +151,7 @@ const Features = () => (
             ),
             title: "Teamwork made simple",
             description:
-              "We have features that let agents work together, and raise tickets to their managers.",
+              "Built-in chat to allow teams and users to communicate right in the app.",
           },
           {
             icon: (
@@ -174,7 +174,7 @@ const Features = () => (
               </svg>
             ),
             title: "Organisation",
-            description: "Use kanban boards to triage through support tickets.",
+            description: "Use subgroups to organise support tickets and users.",
           },
         ].map((feature, index) => (
           <div
