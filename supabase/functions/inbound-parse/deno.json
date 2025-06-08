@@ -1,5 +1,6 @@
 {
   "imports": {
+    "@std/encoding": "jsr:@std/encoding@^1.0.10",
     "sanitize-html": "npm:sanitize-html@^2.17.0",
     "valibot": "npm:valibot@^1.1.0"
   }

@@ -5,6 +5,7 @@
 // Setup type definitions for built-in Supabase Runtime APIs
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js";
+import { decodeBase64 } from "jsr:@std/encoding/base64";
 import * as v from "npm:valibot";
 import sanitize from "npm:sanitize-html";
 
@@ -252,7 +253,7 @@ Deno.serve(async (req) => {
       if (tcer) console.error("Could not reopen ticket:", tcer);
     }
 
-    const { error } = await supabase.from("messages").insert({
+    const { error, data: msg } = await supabase.from("messages").insert({
       message_id: messageId,
       text: bodyText,
       ticket_id: ticketId,
@@ -263,10 +264,30 @@ Deno.serve(async (req) => {
       in_reply_to: replyId || null,
       reply_to: replyTo,
       title: data.Subject,
-    });
+    }).select("id").single();
     if (error) {
       // TODO: send a mail back to the user
       throw new Error(error.message);
+    }
+
+    const attachments =
+      (await Promise.all(data.Attachments.map(async (attachment, i) => {
+        const { data, error } = await supabase.storage.from("attachments")
+          .upload(
+            `/${orgId}/${ticketId}/${msg.id}/${i}${
+              attachment.Name?.split(".").at(-1) || ""
+            }`,
+            decodeBase64(attachment.Content),
+            { contentType: attachment.ContentType },
+          );
+        if (error) {
+          console.error("Could not add attachment:", error);
+          return undefined;
+        }
+        return data.path;
+      }))).filter((i) => !!i);
+    if (attachments.length > 0) {
+      await supabase.from("messages").update({ attachments }).eq("id", msg.id);
     }
 
     return new Response(
