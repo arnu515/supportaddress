@@ -243,10 +243,13 @@ Deno.serve(async (req) => {
       subgroupId = msg.subgroup_id as string;
       replyId = msg.id;
 
-      await supabase.from("tickets").update({ closed_at: null }).eq(
+      const { error: tcer } = await supabase.from("tickets").update({
+        closed_at: null,
+      }).eq(
         "id",
         ticketId,
       );
+      if (tcer) console.error("Could not reopen ticket:", tcer);
     }
 
     const { error } = await supabase.from("messages").insert({
