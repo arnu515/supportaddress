@@ -221,7 +221,7 @@ export default component$(() => {
                 class="org-dropdown"
                 style={{ display: orgDropdownOpen.value ? "block" : "none" }}
               >
-                {orgs.value.map((org) => (
+                {orgs.value?.map((org) => (
                   <li key={org.id}>
                     <Link
                       href={`/app/${org.id}`}
