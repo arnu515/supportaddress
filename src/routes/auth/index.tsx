@@ -71,8 +71,12 @@ export const useCheckOtp = routeAction$(
       name,
     });
     if (error) return req.fail(500, { message: error.message });
-
-    throw req.redirect(302, "/app");
+    const { error: pError } = await supabaseAnon.auth.signInWithPassword({
+      email,
+      password,
+    });
+    if (pError) return req.fail(500, { message: pError.message });
+    return { ok: true };
   },
   zod$({
     email: z
@@ -370,6 +374,8 @@ export default component$(() => {
                     typeof e.detail.value?.message === "string"
                   )
                     error.value = e.detail.value?.message;
+
+                  if (e.detail.value?.ok) window.location.href = "/app";
                 }}
               >
                 <div class="rounded-lg border border-purple-400/20 bg-purple-500/10 p-4 text-center">
