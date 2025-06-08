@@ -161,18 +161,21 @@ Deno.serve(async (req) => {
     console.log("received req body:\n", JSON.stringify(body, undefined, 2));
     const data = v.parse(schema, body);
 
-    let replyId: string | undefined = undefined,
+    let replyMsgId: string | undefined = undefined,
       messageId: string | undefined = undefined,
       replyTo: string | undefined = undefined;
     for (const header of data.Headers) {
       const name = header.Name.toLowerCase();
       const value = header.Value;
       if (name === "in-reply-to" || name === "references") {
-        replyId = value;
+        replyMsgId =
+          value.replaceAll("<", "").replaceAll(">", "").trim().split(" ")[0];
       } else if (name === "message-id") {
-        messageId = value;
+        messageId =
+          value.replaceAll("<", "").replaceAll(">", "").trim().split(" ")[0];
       } else if (name === "reply-to") {
-        replyTo = value;
+        replyTo =
+          value.replaceAll("<", "").replaceAll(">", "").trim().split(" ")[0];
       }
     }
     if (!messageId) throw new Error("Mail did not have a message ID");
@@ -184,14 +187,14 @@ Deno.serve(async (req) => {
         allowedAttributes: {},
       })
       : undefined;
-    const bodyText = replyId
+    const bodyText = replyMsgId
       ? data.StrippedTextReply || data.TextBody || htmlBody
       : data.TextBody || htmlBody;
 
     const toEmail = data.ToFull[0].Email;
     const orgId = toEmail.substring(
       0,
-      toEmail.indexOf("@"),
+      toEmail.indexOf("+") !== -1 ? toEmail.indexOf("+") : toEmail.indexOf("@"),
     ).trim();
     console.log("Organisation", orgId);
     const { count, error: orgError } = await supabase.from(
@@ -208,7 +211,8 @@ Deno.serve(async (req) => {
 
     let ticketId: string | undefined = undefined;
     let subgroupId: string | undefined = undefined;
-    if (!replyId) {
+    let replyId: string | undefined = undefined;
+    if (!replyMsgId) {
       if (await checkSubgroup(data.MailboxHash, orgId)) {
         subgroupId = data.MailboxHash;
       } else subgroupId = await classifySubgroup(data.Subject, bodyText, orgId);
@@ -226,16 +230,18 @@ Deno.serve(async (req) => {
       }
       ticketId = ticket.id as string;
     } else {
-      const { data: ticket, error } = await supabase.from("messages").select(
-        "ticket_id, subgroup_id",
+      console.log(replyMsgId, orgId);
+      const { data: msg, error } = await supabase.from("messages").select(
+        "id, ticket_id, subgroup_id",
       )
-        .eq("in_reply_to", replyId).eq("org_id", orgId).single();
+        .eq("message_id", replyMsgId).eq("org_id", orgId).single();
       if (error) {
         // TODO: send a mail back to the user
         throw new Error(error.message);
       }
-      ticketId = ticket.ticket_id as string;
-      subgroupId = ticket.subgroup_id as string;
+      ticketId = msg.ticket_id as string;
+      subgroupId = msg.subgroup_id as string;
+      replyId = msg.id;
     }
 
     const { error } = await supabase.from("messages").insert({
