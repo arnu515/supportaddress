@@ -265,7 +265,7 @@ export default component$(() => {
               <li>
                 <Link
                   href="/app/messages"
-                  class={`${loc.url.pathname.startsWith("/app/messages") ? "active" : ""}!flex items-center gap-2`}
+                  class={`${loc.url.pathname.startsWith("/app/messages") ? "active " : ""}!flex items-center gap-2`}
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -290,7 +290,7 @@ export default component$(() => {
               <li>
                 <Link
                   href="/app/settings"
-                  class={`${loc.url.pathname.startsWith("/app/settings") ? "active" : ""}!flex items-center gap-2`}
+                  class={`${loc.url.pathname.startsWith("/app/settings") ? "active " : ""}!flex items-center gap-2`}
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
