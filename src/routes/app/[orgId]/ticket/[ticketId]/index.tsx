@@ -58,7 +58,7 @@ const Message = component$(
         </header>
         <div
           class="px-4 py-2"
-          dangerouslySetInnerHTML={sanitize(msg.text)}
+          dangerouslySetInnerHTML={sanitize(msg.text).replaceAll('\n', '<br>')}
         ></div>
       </article>
     );
