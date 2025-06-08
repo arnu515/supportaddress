@@ -30,7 +30,19 @@ export default component$(() => {
         Settings
       </h1>
 
-      <div class="mx-auto my-8 max-w-screen-md p-4">
+      <div class="mx-auto my-4 max-w-screen-md p-4">
+        <div class="flex items-center justify-between gap-4 rounded-xl border border-gray-500 bg-gray-200 px-6 py-3 shadow-md dark:bg-gray-700">
+          <h3 class="text-xl font-medium">Create/Join an organisation</h3>
+          <Link
+            href="/app/new-org"
+            class="rounded-md border border-transparent bg-purple-100 px-4 py-2 text-lg text-purple-500 dark:bg-purple-900/30"
+          >
+            New Organisation
+          </Link>
+        </div>
+      </div>
+
+      <div class="mx-auto my-4 max-w-screen-md p-4">
         <div class="flex items-center justify-between gap-4 rounded-xl border border-gray-500 bg-gray-200 px-6 py-3 shadow-md dark:bg-gray-700">
           <h3 class="text-xl font-medium">Log out</h3>
           <a
