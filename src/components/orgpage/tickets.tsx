@@ -12,7 +12,6 @@ export const useTickets = routeLoader$(async (req) => {
       .from("tickets")
       .select("*, messages(count), subgroups(name)")
       .eq("org_id", req.params.orgId)
-      .is("subgroup_id", null);
     if (error) throw req.error(500, error.message);
     return tickets;
   } else {
