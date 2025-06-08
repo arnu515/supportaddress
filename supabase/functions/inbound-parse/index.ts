@@ -99,6 +99,15 @@ ${
   return undefined;
 }
 
+async function checkSubgroup(id: unknown, orgId: string): Promise<boolean> {
+  if (typeof id !== "string" || !id.trim()) return false;
+  const { count, error } = await supabase.from("subgroups").select(
+    "id",
+    { count: "exact", head: true },
+  ).eq("id", id.trim()).eq("org_id", orgId);
+  return !error && count === 1;
+}
+
 Deno.serve(async (req) => {
   const key = Deno.env.get("WEBHOOK_KEY") ?? "";
   if (!new URL(req.url).pathname.includes(key)) {
@@ -133,6 +142,7 @@ Deno.serve(async (req) => {
         v.nonEmpty(),
       ),
       Subject: v.pipe(v.string(), v.trim()),
+      MailboxHash: v.optional(v.pipe(v.string(), v.trim())),
       Headers: v.array(v.object({
         Name: v.string(),
         Value: v.string(),
@@ -199,7 +209,9 @@ Deno.serve(async (req) => {
     let ticketId: string | undefined = undefined;
     let subgroupId: string | undefined = undefined;
     if (!replyId) {
-      subgroupId = await classifySubgroup(data.Subject, bodyText, orgId);
+      if (await checkSubgroup(data.MailboxHash, orgId)) {
+        subgroupId = data.MailboxHash;
+      } else subgroupId = await classifySubgroup(data.Subject, bodyText, orgId);
       const { data: ticket, error } = await supabase.from("tickets").insert({
         from: data.FromFull.Email,
         from_name: data.FromFull.Name || null,
