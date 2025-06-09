@@ -15,6 +15,7 @@ import { format } from "date-fns";
 import Editor from "~/components/editor";
 import sanitize from "sanitize-html";
 import { useCurrentOrg } from "~/routes/app/layout";
+import { Buffer } from "node:buffer";
 
 export const useTicket = routeLoader$(async (req) => {
   const supabase = createSupabaseServerClient(req);
@@ -29,8 +30,51 @@ export const useTicket = routeLoader$(async (req) => {
   return data;
 });
 
+export const useMessageAttachments = routeLoader$(async (req) => {
+  const ticket = await req.resolveValue(useTicket);
+  const supabase = createSupabaseServerClient(req);
+  return Object.fromEntries(
+    await Promise.all(
+      ticket.messages.map(
+        async (i) =>
+          [
+            i.id,
+            (
+              await Promise.all(
+                i.attachments.map(async (at) => {
+                  const { data: info, error } = await supabase.storage
+                    .from("attachments")
+                    .info(at);
+                  if (error) {
+                    console.error(error);
+                    return undefined;
+                  }
+                  return {
+                    path: at,
+                    name:
+                      (info.metadata?.origName as string) ||
+                      at.split("/").at(-1) ||
+                      "Unnamed file",
+                    type: info.contentType || "application/octet-stream",
+                    id: info.id,
+                  };
+                }),
+              )
+            ).filter((i) => i !== undefined),
+          ] as const,
+      ),
+    ),
+  );
+});
+
 const Message = component$(
-  ({ msg }: { msg: Database["public"]["Tables"]["messages"]["Row"] }) => {
+  ({
+    msg,
+    attachments,
+  }: {
+    msg: Database["public"]["Tables"]["messages"]["Row"];
+    attachments: { name: string; path: string; type: string; id: string }[];
+  }) => {
     return (
       <article
         class="my-4 rounded-md border border-gray-200 bg-gray-50 text-black shadow-sm dark:border-gray-700 dark:bg-gray-800/50 dark:text-white"
@@ -58,8 +102,25 @@ const Message = component$(
         </header>
         <div
           class="px-4 py-2"
-          dangerouslySetInnerHTML={sanitize(msg.text).replaceAll('\n', '<br>')}
+          dangerouslySetInnerHTML={sanitize(msg.text).replaceAll("\n", "<br>")}
         ></div>
+        {attachments.length > 0 && (
+          <footer class="flex flex-col justify-center gap-1 rounded-br-md rounded-bl-md border border-gray-200 bg-gray-300 px-2 py-1 dark:bg-gray-700">
+            <h3 class="font-medium">Attached files:</h3>
+            {attachments.map((file) => (
+              <p class="ml-4">
+                <a
+                  target="_blank"
+                  href={`/app/file/${file.path}`}
+                  class="text-purple-500"
+                >
+                  {file.name}
+                </a>{" "}
+                <span class="text-gray-500">{file.type}</span>
+              </p>
+            ))}
+          </footer>
+        )}
       </article>
     );
   },
@@ -208,6 +269,7 @@ export const onPost: RequestHandler = async (req) => {
     Headers.push({ Name: "In-Reply-To", Value: replyMessage.message_id });
     Headers.push({ Name: "References", Value: replyMessage.message_id });
   }
+
   const res = await fetch("https://api.postmarkapp.com/email", {
     method: "POST",
     headers: {
@@ -225,7 +287,15 @@ export const onPost: RequestHandler = async (req) => {
       HtmlBody: content,
       TextBody: sanitize(content, { allowedAttributes: {}, allowedTags: [] }),
       ReplyTo: `${ticket.org_id}${ticket.subgroup_id ? "+" + ticket.subgroup_id : ""}@supportaddress.aarnavpai.in`,
-      // TODO: attachments
+      Attachments: await Promise.all(
+        (fd.getAll("files").filter((i) => typeof i !== "string") as File[]).map(
+          async (i) => ({
+            Name: i.name,
+            Content: Buffer.from(await i.arrayBuffer()).toString("base64"),
+            ContentType: i.type || "application/octet-stream",
+          }),
+        ),
+      ),
     }),
   });
   if (!res.ok) {
@@ -236,24 +306,54 @@ export const onPost: RequestHandler = async (req) => {
   const { MessageID } = await res.json();
 
   const supabaseSR = createServiceRoleClient(req.env);
-  const { error: insError } = await supabaseSR.from("messages").insert({
-    from_email: user.email,
-    message_id: MessageID + "@mtasv.net",
-    org_id: ticket.org_id,
-    reply_to: user.email,
-    text: content,
-    ticket_id: ticket.id,
-    title,
-    from_name: user.profile.name,
-    in_reply_to: replyMessage?.id || null,
-    subgroup_id: ticket.subgroup_id || null,
-  });
+  const { error: insError, data: msg } = await supabaseSR
+    .from("messages")
+    .insert({
+      from_email: user.email,
+      message_id: MessageID + "@mtasv.net",
+      org_id: ticket.org_id,
+      reply_to: user.email,
+      text: content,
+      ticket_id: ticket.id,
+      title,
+      from_name: user.profile.name,
+      in_reply_to: replyMessage?.id || null,
+      subgroup_id: ticket.subgroup_id || null,
+    })
+    .select("id")
+    .single();
   if (insError) {
     req.json(500, { message: insError.message });
     return;
   }
 
-  // TODO: attachments
+  const attachments = (
+    await Promise.all(
+      fd.getAll("files").map(async (attachment, i) => {
+        if (typeof attachment === "string") return undefined;
+        const { data, error } = await supabaseSR.storage
+          .from("attachments")
+          .upload(
+            `/${ticket.org_id}/${ticket.id}/${msg.id}/${i}${
+              "." + attachment.name.split(".").at(-1) || ""
+            }`,
+            attachment,
+            {
+              contentType: attachment.type,
+              metadata: { origName: attachment.name },
+            },
+          );
+        if (error) {
+          console.error("Could not add attachment:", error);
+          return undefined;
+        }
+        return data.path;
+      }),
+    )
+  ).filter((i) => typeof i === "string") as string[];
+  if (attachments.length > 0) {
+    await supabaseSR.from("messages").update({ attachments }).eq("id", msg.id);
+  }
 
   req.json(200, { success: true });
 };
@@ -274,7 +374,7 @@ const EditBox = component$(
           const fd = new FormData();
           fd.set("content", content.value.trim());
           fd.set("title", title.value.trim());
-          for (const attach in attachments)
+          for (const attach of Object.values(attachments.value))
             if (attach) fd.append("files", attach);
           fd.set("replyTo", replyTo.value ?? "");
 
@@ -646,6 +746,7 @@ export default component$(() => {
   const ticket = useTicket();
   const user = useRequiredUser();
   const org = useCurrentOrg();
+  const attachments = useMessageAttachments();
 
   return (
     <div class="flex flex-col-reverse items-center gap-2 p-4 md:flex-row md:items-start">
@@ -655,9 +756,14 @@ export default component$(() => {
         </h1>
 
         {ticket.value.messages.map((msg) => (
-          <Message key={msg.id} msg={msg} />
+          <Message
+            key={msg.id}
+            msg={msg}
+            attachments={attachments.value[msg.id] as any}
+          />
         ))}
-        {(!ticket.value.assigned_to ||
+        {(!ticket.value.closed_at ||
+          ticket.value.assigned_to ||
           ticket.value.assigned_to === user.value.id) && (
           <EditBox messages={ticket.value.messages} />
         )}
